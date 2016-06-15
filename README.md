@@ -2,4 +2,4 @@
 An iMessage App with Emojis
 
 
-![Alt text](screenshots/i-message-app.png?raw=true "Screenshot")
+![Alt text](screenshots/imessage-app.png?raw=true "Screenshot")

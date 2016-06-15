@@ -3,7 +3,7 @@
 An iMessage App with Emojis. 
 
 <p align="center">
-<img src="screenshots/imessage-app.png?raw=true" alt="Drawing" style="width: 200px;" />
+<img style="width: 200px;" src="screenshots/imessage-app.png" alt="Drawing" />
 </p>
 
 ## Instructions

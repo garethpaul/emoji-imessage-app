@@ -39,7 +39,6 @@ Canonical security policy and reporting:
 
 - [`SECURITY.md`](SECURITY.md)
 
-
 iMessage extensions should not collect message content or user conversations.
 Future features should avoid analytics or network behavior unless explicitly
 documented and user-controlled.

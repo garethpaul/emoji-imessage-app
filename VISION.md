@@ -1,0 +1,47 @@
+## Emoji iMessage App Vision
+
+Emoji iMessage App is a Swift iMessage extension that presents emoji assets for
+use inside Messages.
+
+The repository is useful as a compact iMessage app sample with bundled emoji
+images, a screenshot, and Xcode project setup. Basic instructions live in
+[`README.md`](README.md).
+
+The goal is to keep the extension easy to open, run, and update while
+preserving asset licensing and iMessage-specific behavior.
+
+The current focus is:
+
+Priority:
+
+- Preserve the Twemoji-based asset set and Messages extension structure
+- Keep the Xcode project runnable on simulator or device
+- Avoid adding generated signing material or private assets
+- Keep screenshot and README instructions aligned with the app
+
+Next priorities:
+
+- Document Xcode and iOS version expectations
+- Clarify emoji asset licensing and update process
+- Add manual verification notes for selecting and sending an emoji
+- Modernize Swift and project settings in a dedicated pass if needed
+
+Contribution rules:
+
+- One PR = one focused asset, extension, build, or documentation change.
+- Preserve license and attribution files.
+- Verify the extension in Messages when changing UI or assets.
+- Keep generated build products and signing files out of git.
+
+## Security And Privacy
+
+iMessage extensions should not collect message content or user conversations.
+Future features should avoid analytics or network behavior unless explicitly
+documented and user-controlled.
+
+## What We Will Not Merge For Now
+
+- Private or unlicensed emoji/image assets
+- Message-content collection or analytics
+- Signing files, provisioning profiles, or build products
+- Large asset updates without attribution and verification notes

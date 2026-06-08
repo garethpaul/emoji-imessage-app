@@ -1,5 +1,8 @@
 # emoji-imessage-app
 
+<!-- README-OVERVIEW-IMAGE -->
+![Project overview](docs/readme-overview.svg)
+
 ## Overview
 
 `garethpaul/emoji-imessage-app` is an Apple platform application or Objective-C/Swift sample. An iMessage App with Emojis
@@ -72,4 +75,3 @@ Keep changes small and tied to the project that is already present in this repos
 Prior README summary:
 
 > emoji iMessage App <!-- README-OVERVIEW-IMAGE --> An iMessage App with Emojis. <p align="center"> </p> Instructions 1. Open up Twemoji.xcodeproj 2. Product > Run > Simulator or Phone
-

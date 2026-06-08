@@ -45,3 +45,6 @@ documented and user-controlled.
 - Message-content collection or analytics
 - Signing files, provisioning profiles, or build products
 - Large asset updates without attribution and verification notes
+
+This list is a roadmap guardrail, not a permanent rule.
+Strong user demand and strong technical rationale can change it.

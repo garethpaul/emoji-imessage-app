@@ -16,7 +16,8 @@ class MessagesViewController: MSMessagesAppViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         browserViewController = TwemojiBrowserViewController(stickerSize: .small)
-        browserViewController.view.frame = self.view.frame
+        browserViewController.view.frame = self.view.bounds
+        browserViewController.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         
         self.addChildViewController(browserViewController)
         browserViewController.didMove(toParentViewController: self)

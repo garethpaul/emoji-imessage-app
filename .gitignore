@@ -5,8 +5,10 @@
 ## Build generated
 build/
 DerivedData/
+*.xcresult
 
 ## Various settings
+.DS_Store
 *.pbxuser
 !default.pbxuser
 *.mode1v3
@@ -26,6 +28,7 @@ xcuserdata/
 *.ipa
 *.dSYM.zip
 *.dSYM
+*.mobileprovision
 
 ## Playgrounds
 timeline.xctimeline

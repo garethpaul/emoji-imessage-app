@@ -14,22 +14,23 @@ class TwemojiBrowserViewController: MSStickerBrowserViewController {
     var stickers = [MSSticker]()
     
     func loadStickers() {
-        
-        let docsPath = Bundle.main().resourcePath!
-        print(docsPath)
+        guard let docsPath = Bundle.main().resourcePath else {
+            print("ERROR: Unable to resolve bundle resource path")
+            return
+        }
+
         let fileManager = FileManager.default()
 
         do {
-            let directoryContents = try fileManager.contentsOfDirectory(atPath: docsPath)
-            for file in directoryContents {
-                if file.hasSuffix(".png") {
-                    createSticker(asset: file.replacingOccurrences(of: ".png", with: ""), localizedDescription: "asset")
-                }
+            stickers.removeAll()
+            let directoryContents = try fileManager.contentsOfDirectory(atPath: docsPath).sorted()
+            for file in directoryContents where file.hasSuffix(".png") {
+                let asset = file.replacingOccurrences(of: ".png", with: "")
+                createSticker(asset: asset, localizedDescription: asset)
             }
         } catch {
-            print("ERROR: Unable to read directory: \(docsPath)")
+            print("ERROR: Unable to read directory: \(docsPath): \(error)")
         }
-        
     }
     
     func createSticker(asset:String, localizedDescription: String) {

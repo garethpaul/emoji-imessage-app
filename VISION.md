@@ -22,6 +22,16 @@ Priority:
 - Avoid adding generated signing material or private assets
 - Keep screenshot and README instructions aligned with the app
 
+Current baseline:
+
+- `scripts/check-baseline.sh` validates project metadata, extension plists,
+  Swift source invariants, and Twemoji PNG signatures.
+- Sticker discovery uses deterministic sticker loading by sorted bundle
+  filename and clears stale state before reloading.
+- The sticker browser is sized to the Messages extension container bounds and
+  resizes with the host view.
+- The checked-in Swift source has no network or analytics behavior.
+
 Next priorities:
 
 - Document Xcode and iOS version expectations
@@ -33,7 +43,9 @@ Contribution rules:
 
 - One PR = one focused asset, extension, build, or documentation change.
 - Preserve license and attribution files.
-- Verify the extension in Messages when changing UI or assets.
+- Run `scripts/check-baseline.sh` before pushing changes.
+- Verify the extension in Messages when changing UI or assets on a machine with
+  Xcode.
 - Keep generated build products and signing files out of git.
 
 ## Security And Privacy

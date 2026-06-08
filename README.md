@@ -5,24 +5,26 @@
 
 ## Overview
 
-`garethpaul/emoji-imessage-app` is an Apple platform application or Objective-C/Swift sample. An iMessage App with Emojis
-
-This README is based on the checked-in source, manifests, scripts, and repository metadata on the `master` branch. The project language mix found during review was: Swift (2).
+`garethpaul/emoji-imessage-app` is a Swift iMessage extension that presents a
+bundled Twemoji image set as Messages stickers. It is a legacy Swift 3 / iOS 10
+Xcode project and has no network or analytics behavior in the checked-in source.
 
 ## Repository Contents
 
 - `README.md` - project overview and local usage notes
+- `CHANGES.md` - maintenance history
+- `Makefile` - local verification entry points
 - `MessagesExtension` - source or example code
 - `SECURITY.md` - security reporting and disclosure guidance
 - `Twemoji` - source or example code
 - `Twemoji.xcodeproj` - Xcode project file
 - `VISION.md` - project direction and maintenance guardrails
 
-Additional scan context:
+Additional project context:
 
 - Source directories: MessagesExtension, Twemoji
-- Dependency and build manifests: none detected
-- Entry points or build surfaces: Twemoji.xcodeproj
+- Dependency and build manifests: Makefile, Twemoji.xcodeproj
+- Entry points or build surfaces: Twemoji.xcodeproj, Makefile
 - Test-looking files: no obvious test files detected
 
 ## Getting Started
@@ -31,6 +33,8 @@ Additional scan context:
 
 - Git
 - macOS with Xcode for building Apple platform projects
+- Python 3 for the repository baseline script
+- `make`
 
 ### Setup
 
@@ -39,32 +43,54 @@ git clone https://github.com/garethpaul/emoji-imessage-app.git
 cd emoji-imessage-app
 ```
 
-The setup commands above are derived from repository files. Legacy mobile, Python, or JavaScript samples may require older SDKs or package versions than a modern workstation uses by default.
+This project preserves a Swift 3 / iOS 10-era baseline. Use a matching Xcode
+toolchain for full builds or migration work.
 
 ## Running or Using the Project
 
 - Open `Twemoji.xcodeproj` in Xcode, choose the app or sample scheme, and run it on the matching simulator/device.
+- The Messages extension loads bundled PNG stickers from `MessagesExtension`
+  deterministically by filename.
+- The extension does not request device permissions and does not include network
+  or analytics code in the checked-in Swift sources.
 
 ## Testing and Verification
 
-- Xcode's test action or `xcodebuild test` with the appropriate scheme and destination
+Run the static maintenance gate:
+
+```bash
+make check
+```
+
+`make check` validates the Xcode project references, extension plists, Swift
+source invariants, and bundled Twemoji PNG signatures. When `xcodebuild` is
+installed, it also checks that Xcode can read `Twemoji.xcodeproj`.
+
+For full Apple-platform verification, open `Twemoji.xcodeproj` in Xcode and run
+the app/extension on an iOS simulator or device.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 
 ## Configuration and Secrets
 
-- No required secret or credential file was identified in the repository scan. If you add integrations later, keep secrets out of git.
+- No required secret or credential file is used by this extension.
+- Do not commit signing certificates, provisioning profiles, Xcode user data,
+  build products, or private assets.
 
 ## Security and Privacy Notes
 
-- Review changes touching network requests, sockets, or service endpoints; examples from the scan include MessagesExtension/Info.plist, Twemoji/Info.plist.
-- Review changes touching file, media, JSON, XML, CSV, OCR, or data parsing; examples from the scan include MessagesExtension/Info.plist, Twemoji/Info.plist.
+- Review changes touching sticker asset discovery, extension plist metadata,
+  bundle resources, signing, and Messages extension lifecycle callbacks.
+- Keep the extension free of message-content collection, analytics, and network
+  behavior unless a future change documents the user value and privacy model.
 
 ## Maintenance Notes
 
 - This looks like an Apple platform project or sample. Xcode, Swift, CocoaPods, and deployment target versions may need to match the original project era.
 - See `SECURITY.md` for vulnerability reporting and safe research guidance.
 - See `VISION.md` for project direction and contribution guardrails.
+- See `docs/plans/2026-06-08-emoji-imessage-app-maintenance-baseline.md` for
+  the current baseline plan.
 
 ## Contributing
 

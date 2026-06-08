@@ -1,5 +1,8 @@
 # emoji iMessage App
 
+<!-- README-OVERVIEW-IMAGE -->
+![Project overview](docs/readme-overview.svg)
+
 An iMessage App with Emojis. 
 
 <p align="center">

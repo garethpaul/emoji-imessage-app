@@ -39,7 +39,7 @@ iMessage extensions should not collect message content or user conversations.
 Future features should avoid analytics or network behavior unless explicitly
 documented and user-controlled.
 
-## What We Will Not Merge For Now
+## What We Will Not Merge (For Now)
 
 - Private or unlicensed emoji/image assets
 - Message-content collection or analytics

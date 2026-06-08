@@ -1,5 +1,8 @@
 ## Emoji iMessage App Vision
 
+This document explains the current state and direction of the project.
+Project overview and developer docs: [`README.md`](README.md)
+
 Emoji iMessage App is a Swift iMessage extension that presents emoji assets for
 use inside Messages.
 

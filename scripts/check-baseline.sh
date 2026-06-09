@@ -48,8 +48,15 @@ done
 if ! grep -Fq "make check" "$README" ||
   ! grep -Fq "Twemoji image set" "$README" ||
   ! grep -Fq "iMessage extension" "$README" ||
+  ! grep -Fq ".mobileprovision" "$README" ||
   ! grep -Fq "no network or analytics behavior" "$README"; then
-  printf '%s\n' "README must document the extension scope, asset set, privacy posture, and check command." >&2
+  printf '%s\n' "README must document the extension scope, asset set, privacy posture, signing artifact guard, and check command." >&2
+  exit 1
+fi
+
+if ! grep -Fq "Signing certificates" "$ROOT_DIR/SECURITY.md" ||
+  ! grep -Fq "archives, and build outputs" "$ROOT_DIR/SECURITY.md"; then
+  printf '%s\n' "SECURITY must document signing and local Xcode artifact exclusions." >&2
   exit 1
 fi
 

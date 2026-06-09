@@ -36,6 +36,9 @@ If this project requests device permissions such as location, camera, microphone
 Sticker asset names should be derived from bundled PNG path extensions rather
 than broad string replacement.
 
+Sticker resource discovery should filter by path extension case-insensitively
+so bundled PNG variants are treated consistently.
+
 Signing certificates, provisioning profiles, certificate bundles, Xcode user
 data, archives, and build outputs should remain untracked.
 

@@ -51,6 +51,8 @@ toolchain for full builds or migration work.
 - Open `Twemoji.xcodeproj` in Xcode, choose the app or sample scheme, and run it on the matching simulator/device.
 - The Messages extension loads bundled PNG stickers from `MessagesExtension`
   deterministically by filename.
+- Sticker discovery filters bundled resources by case-insensitive PNG path
+  extension.
 - Sticker asset names are derived by stripping only the PNG path extension.
 - The extension does not request device permissions and does not include network
   or analytics code in the checked-in Swift sources.
@@ -112,6 +114,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   Swift privacy source guard.
 - See `docs/plans/2026-06-09-emoji-imessage-asset-name-normalization.md` for
   sticker asset-name normalization.
+- See `docs/plans/2026-06-09-emoji-imessage-png-extension-filter.md` for the
+  sticker PNG extension filter.
 - See `docs/plans/2026-06-09-emoji-imessage-signing-artifact-guard.md` for the
   signing and local Xcode artifact guard.
 - See `docs/plans/2026-06-09-emoji-imessage-debug-logging-guard.md` for the

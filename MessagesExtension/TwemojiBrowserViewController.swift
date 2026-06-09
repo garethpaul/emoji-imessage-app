@@ -24,13 +24,17 @@ class TwemojiBrowserViewController: MSStickerBrowserViewController {
 
         do {
             let directoryContents = try fileManager.contentsOfDirectory(atPath: docsPath).sorted()
-            for file in directoryContents where file.hasSuffix(".png") {
+            for file in directoryContents where isPNGResource(file) {
                 let asset = (file as NSString).deletingPathExtension
                 createSticker(asset: asset, localizedDescription: asset)
             }
         } catch {
             return
         }
+    }
+
+    private func isPNGResource(_ file: String) -> Bool {
+        return (file as NSString).pathExtension.lowercased() == "png"
     }
     
     func createSticker(asset:String, localizedDescription: String) {

@@ -2,6 +2,7 @@
 
 ## 2026-06-09
 
+- Filtered sticker resources by case-insensitive PNG path extension.
 - Removed sticker-loading debug logging and exposed `make lint`, `make test`,
   and `make build` aliases for the static baseline.
 - Added a guard for signing, provisioning, Xcode user, archive, and build

@@ -12,6 +12,7 @@ RELOAD_PLAN="$ROOT_DIR/docs/plans/2026-06-08-emoji-imessage-sticker-reload.md"
 LIFECYCLE_PLAN="$ROOT_DIR/docs/plans/2026-06-09-emoji-imessage-child-lifecycle.md"
 PRIVACY_PLAN="$ROOT_DIR/docs/plans/2026-06-09-emoji-imessage-privacy-source-guard.md"
 ASSET_NAME_PLAN="$ROOT_DIR/docs/plans/2026-06-09-emoji-imessage-asset-name-normalization.md"
+PNG_EXTENSION_PLAN="$ROOT_DIR/docs/plans/2026-06-09-emoji-imessage-png-extension-filter.md"
 SIGNING_PLAN="$ROOT_DIR/docs/plans/2026-06-09-emoji-imessage-signing-artifact-guard.md"
 LOGGING_PLAN="$ROOT_DIR/docs/plans/2026-06-09-emoji-imessage-debug-logging-guard.md"
 
@@ -39,6 +40,7 @@ for path in \
   "MessagesExtension/TwemojiBrowserViewController.swift" \
   "docs/plans/2026-06-09-emoji-imessage-privacy-source-guard.md" \
   "docs/plans/2026-06-09-emoji-imessage-asset-name-normalization.md" \
+  "docs/plans/2026-06-09-emoji-imessage-png-extension-filter.md" \
   "docs/plans/2026-06-09-emoji-imessage-signing-artifact-guard.md" \
   "docs/plans/2026-06-09-emoji-imessage-debug-logging-guard.md" \
   "docs/plans/2026-06-09-emoji-imessage-child-lifecycle.md" \
@@ -52,6 +54,7 @@ if ! grep -Fq "make check" "$README" ||
   ! grep -Fq "iMessage extension" "$README" ||
   ! grep -Fq ".mobileprovision" "$README" ||
   ! grep -Fq "debug logging" "$README" ||
+  ! grep -Fq "case-insensitive PNG path" "$README" ||
   ! grep -Fq "no network or analytics behavior" "$README"; then
   printf '%s\n' "README must document the extension scope, asset set, privacy posture, debug logging guard, signing artifact guard, and check command." >&2
   exit 1
@@ -59,6 +62,7 @@ fi
 
 if ! grep -Fq "Signing certificates" "$ROOT_DIR/SECURITY.md" ||
   ! grep -Fq "archives, and build outputs" "$ROOT_DIR/SECURITY.md" ||
+  ! grep -Fq "path extension case-insensitively" "$ROOT_DIR/SECURITY.md" ||
   ! grep -Fq "debug logging" "$ROOT_DIR/SECURITY.md"; then
   printf '%s\n' "SECURITY must document signing, debug logging, and local Xcode artifact exclusions." >&2
   exit 1
@@ -86,6 +90,7 @@ fi
 
 if ! grep -Fq "scripts/check-baseline.sh" "$VISION" ||
   ! grep -Fq "deterministic sticker loading" "$VISION" ||
+  ! grep -Fq "case-insensitive PNG path extension" "$VISION" ||
   ! grep -Fq "debug logging" "$VISION"; then
   printf '%s\n' "VISION must include the baseline command, debug logging posture, and current sticker-loading posture." >&2
   exit 1
@@ -124,6 +129,13 @@ fi
 if ! grep -Fq "(file as NSString).deletingPathExtension" "$BROWSER_VIEW" ||
   grep -Fq 'replacingOccurrences(of: ".png", with: "")' "$BROWSER_VIEW"; then
   printf '%s\n' "Sticker loading must derive asset names by stripping only the path extension." >&2
+  exit 1
+fi
+
+if ! grep -Fq "private func isPNGResource" "$BROWSER_VIEW" ||
+  ! grep -Fq 'pathExtension.lowercased() == "png"' "$BROWSER_VIEW" ||
+  grep -Fq 'file.hasSuffix(".png")' "$BROWSER_VIEW"; then
+  printf '%s\n' "Sticker loading must filter PNG resources by case-insensitive path extension." >&2
   exit 1
 fi
 
@@ -279,6 +291,11 @@ if ! grep -Fq "status: completed" "$ASSET_NAME_PLAN"; then
   exit 1
 fi
 
+if ! grep -Fq "status: completed" "$PNG_EXTENSION_PLAN"; then
+  printf '%s\n' "PNG extension filter plan must be marked completed." >&2
+  exit 1
+fi
+
 if ! grep -Fq "status: completed" "$SIGNING_PLAN"; then
   printf '%s\n' "Signing artifact guard plan must be marked completed." >&2
   exit 1
@@ -296,6 +313,11 @@ fi
 
 if ! grep -Fq "make check" "$SIGNING_PLAN"; then
   printf '%s\n' "Signing artifact guard plan must record make check verification." >&2
+  exit 1
+fi
+
+if ! grep -Fq "make check" "$PNG_EXTENSION_PLAN"; then
+  printf '%s\n' "PNG extension filter plan must record make check verification." >&2
   exit 1
 fi
 

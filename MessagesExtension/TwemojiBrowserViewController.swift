@@ -14,6 +14,8 @@ class TwemojiBrowserViewController: MSStickerBrowserViewController {
     var stickers = [MSSticker]()
     
     func loadStickers() {
+        stickers.removeAll()
+
         guard let docsPath = Bundle.main().resourcePath else {
             print("ERROR: Unable to resolve bundle resource path")
             return
@@ -22,7 +24,6 @@ class TwemojiBrowserViewController: MSStickerBrowserViewController {
         let fileManager = FileManager.default()
 
         do {
-            stickers.removeAll()
             let directoryContents = try fileManager.contentsOfDirectory(atPath: docsPath).sorted()
             for file in directoryContents where file.hasSuffix(".png") {
                 let asset = file.replacingOccurrences(of: ".png", with: "")

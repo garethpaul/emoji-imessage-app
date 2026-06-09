@@ -8,6 +8,7 @@ PROJECT="$ROOT_DIR/Twemoji.xcodeproj/project.pbxproj"
 MESSAGES_VIEW="$ROOT_DIR/MessagesExtension/MessagesViewController.swift"
 BROWSER_VIEW="$ROOT_DIR/MessagesExtension/TwemojiBrowserViewController.swift"
 PLAN="$ROOT_DIR/docs/plans/2026-06-08-emoji-imessage-app-maintenance-baseline.md"
+RELOAD_PLAN="$ROOT_DIR/docs/plans/2026-06-08-emoji-imessage-sticker-reload.md"
 
 require_file() {
   path=$1
@@ -31,6 +32,7 @@ for path in \
   "MessagesExtension/Base.lproj/MainInterface.storyboard" \
   "MessagesExtension/MessagesViewController.swift" \
   "MessagesExtension/TwemojiBrowserViewController.swift" \
+  "docs/plans/2026-06-08-emoji-imessage-sticker-reload.md" \
   "docs/plans/2026-06-08-emoji-imessage-app-maintenance-baseline.md"; do
   require_file "$path"
 done
@@ -63,6 +65,18 @@ if ! grep -Fq "guard let docsPath = Bundle.main().resourcePath" "$BROWSER_VIEW" 
   printf '%s\n' "Sticker loading must avoid force unwraps, clear previous data, sort resources, and use per-asset descriptions." >&2
   exit 1
 fi
+
+python3 - "$BROWSER_VIEW" <<'PY'
+import sys
+from pathlib import Path
+
+source = Path(sys.argv[1]).read_text(encoding="utf-8")
+clear = source.find("stickers.removeAll()")
+guard = source.find("guard let docsPath = Bundle.main().resourcePath")
+if clear == -1 or guard == -1 or clear > guard:
+    print("Sticker loading must clear stale stickers before resource resolution.", file=sys.stderr)
+    raise SystemExit(1)
+PY
 
 if ! grep -Fq "SWIFT_VERSION = 3.0;" "$PROJECT" ||
   ! grep -Fq "IPHONEOS_DEPLOYMENT_TARGET = 10.0;" "$PROJECT" ||
@@ -128,6 +142,11 @@ fi
 
 if ! grep -Fq "status: completed" "$PLAN"; then
   printf '%s\n' "Plan must be marked completed." >&2
+  exit 1
+fi
+
+if ! grep -Fq "status: completed" "$RELOAD_PLAN"; then
+  printf '%s\n' "Sticker reload plan must be marked completed." >&2
   exit 1
 fi
 

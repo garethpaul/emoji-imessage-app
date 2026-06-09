@@ -11,17 +11,19 @@ import Messages
 
 class MessagesViewController: MSMessagesAppViewController {
     
-    var browserViewController: TwemojiBrowserViewController!
+    private var browserViewController: TwemojiBrowserViewController?
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        browserViewController = TwemojiBrowserViewController(stickerSize: .small)
+
+        let browserViewController = TwemojiBrowserViewController(stickerSize: .small)
         browserViewController.view.frame = self.view.bounds
         browserViewController.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        self.browserViewController = browserViewController
         
         self.addChildViewController(browserViewController)
-        browserViewController.didMove(toParentViewController: self)
         self.view.addSubview(browserViewController.view)
+        browserViewController.didMove(toParentViewController: self)
         
         browserViewController.loadStickers()
         browserViewController.stickerBrowserView.reloadData()

@@ -30,6 +30,8 @@ Current baseline:
   filename and clears stale state before reloading.
 - The sticker browser is sized to the Messages extension container bounds and
   resizes with the host view.
+- The sticker browser child controller is retained explicitly and follows the
+  add-child, add-view, did-move lifecycle order.
 - The checked-in Swift source has no network or analytics behavior.
 
 Next priorities:

@@ -9,6 +9,7 @@ MESSAGES_VIEW="$ROOT_DIR/MessagesExtension/MessagesViewController.swift"
 BROWSER_VIEW="$ROOT_DIR/MessagesExtension/TwemojiBrowserViewController.swift"
 PLAN="$ROOT_DIR/docs/plans/2026-06-08-emoji-imessage-app-maintenance-baseline.md"
 RELOAD_PLAN="$ROOT_DIR/docs/plans/2026-06-08-emoji-imessage-sticker-reload.md"
+LIFECYCLE_PLAN="$ROOT_DIR/docs/plans/2026-06-09-emoji-imessage-child-lifecycle.md"
 
 require_file() {
   path=$1
@@ -32,6 +33,7 @@ for path in \
   "MessagesExtension/Base.lproj/MainInterface.storyboard" \
   "MessagesExtension/MessagesViewController.swift" \
   "MessagesExtension/TwemojiBrowserViewController.swift" \
+  "docs/plans/2026-06-09-emoji-imessage-child-lifecycle.md" \
   "docs/plans/2026-06-08-emoji-imessage-sticker-reload.md" \
   "docs/plans/2026-06-08-emoji-imessage-app-maintenance-baseline.md"; do
   require_file "$path"
@@ -52,10 +54,25 @@ if ! grep -Fq "scripts/check-baseline.sh" "$VISION" ||
 fi
 
 if ! grep -Fq "browserViewController.view.frame = self.view.bounds" "$MESSAGES_VIEW" ||
-  ! grep -Fq "autoresizingMask = [.flexibleWidth, .flexibleHeight]" "$MESSAGES_VIEW"; then
+  ! grep -Fq "autoresizingMask = [.flexibleWidth, .flexibleHeight]" "$MESSAGES_VIEW" ||
+  ! grep -Fq "private var browserViewController: TwemojiBrowserViewController?" "$MESSAGES_VIEW" ||
+  grep -Fq "TwemojiBrowserViewController!" "$MESSAGES_VIEW"; then
   printf '%s\n' "Messages view must size the sticker browser to the container bounds with autoresizing." >&2
   exit 1
 fi
+
+python3 - "$MESSAGES_VIEW" <<'PY'
+import sys
+from pathlib import Path
+
+source = Path(sys.argv[1]).read_text(encoding="utf-8")
+add_child = source.find("self.addChildViewController(browserViewController)")
+add_subview = source.find("self.view.addSubview(browserViewController.view)")
+did_move = source.find("browserViewController.didMove(toParentViewController: self)")
+if -1 in (add_child, add_subview, did_move) or not (add_child < add_subview < did_move):
+    print("Messages view must add the child controller, add its view, then call didMove.", file=sys.stderr)
+    raise SystemExit(1)
+PY
 
 if ! grep -Fq "guard let docsPath = Bundle.main().resourcePath" "$BROWSER_VIEW" ||
   ! grep -Fq "stickers.removeAll()" "$BROWSER_VIEW" ||
@@ -147,6 +164,11 @@ fi
 
 if ! grep -Fq "status: completed" "$RELOAD_PLAN"; then
   printf '%s\n' "Sticker reload plan must be marked completed." >&2
+  exit 1
+fi
+
+if ! grep -Fq "status: completed" "$LIFECYCLE_PLAN"; then
+  printf '%s\n' "Child-controller lifecycle plan must be marked completed." >&2
   exit 1
 fi
 

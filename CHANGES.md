@@ -1,5 +1,13 @@
 # Changes
 
+## 2026-06-09
+
+- Made the sticker browser child controller optional instead of implicitly
+  unwrapped.
+- Added the child browser view before calling `didMove`, matching UIKit child
+  controller lifecycle order.
+- Added a static baseline guard for the child-controller setup.
+
 ## 2026-06-08
 
 - Added a repeatable `make check` baseline for the Swift iMessage extension.

@@ -12,6 +12,7 @@ RELOAD_PLAN="$ROOT_DIR/docs/plans/2026-06-08-emoji-imessage-sticker-reload.md"
 LIFECYCLE_PLAN="$ROOT_DIR/docs/plans/2026-06-09-emoji-imessage-child-lifecycle.md"
 PRIVACY_PLAN="$ROOT_DIR/docs/plans/2026-06-09-emoji-imessage-privacy-source-guard.md"
 ASSET_NAME_PLAN="$ROOT_DIR/docs/plans/2026-06-09-emoji-imessage-asset-name-normalization.md"
+SIGNING_PLAN="$ROOT_DIR/docs/plans/2026-06-09-emoji-imessage-signing-artifact-guard.md"
 
 require_file() {
   path=$1
@@ -37,6 +38,7 @@ for path in \
   "MessagesExtension/TwemojiBrowserViewController.swift" \
   "docs/plans/2026-06-09-emoji-imessage-privacy-source-guard.md" \
   "docs/plans/2026-06-09-emoji-imessage-asset-name-normalization.md" \
+  "docs/plans/2026-06-09-emoji-imessage-signing-artifact-guard.md" \
   "docs/plans/2026-06-09-emoji-imessage-child-lifecycle.md" \
   "docs/plans/2026-06-08-emoji-imessage-sticker-reload.md" \
   "docs/plans/2026-06-08-emoji-imessage-app-maintenance-baseline.md"; do
@@ -48,6 +50,19 @@ if ! grep -Fq "make check" "$README" ||
   ! grep -Fq "iMessage extension" "$README" ||
   ! grep -Fq "no network or analytics behavior" "$README"; then
   printf '%s\n' "README must document the extension scope, asset set, privacy posture, and check command." >&2
+  exit 1
+fi
+
+for ignore_entry in "*.xcarchive" "*.mobileprovision" "*.provisionprofile" "*.p12" "*.cer" "xcuserdata/" "DerivedData/"; do
+  if ! grep -Fxq "$ignore_entry" "$ROOT_DIR/.gitignore"; then
+    printf '%s\n' ".gitignore must exclude signing and Xcode local artifacts: $ignore_entry" >&2
+    exit 1
+  fi
+done
+
+tracked_signing_artifacts=$(git -C "$ROOT_DIR" ls-files | grep -Ei '(\.mobileprovision$|\.provisionprofile$|\.p12$|\.cer$|\.xcarchive(/|$)|xcuserdata/|DerivedData/)' || true)
+if [ -n "$tracked_signing_artifacts" ]; then
+  printf '%s\n%s\n' "Signing or local Xcode artifacts must not be tracked:" "$tracked_signing_artifacts" >&2
   exit 1
 fi
 
@@ -223,6 +238,16 @@ fi
 
 if ! grep -Fq "status: completed" "$ASSET_NAME_PLAN"; then
   printf '%s\n' "Asset-name normalization plan must be marked completed." >&2
+  exit 1
+fi
+
+if ! grep -Fq "status: completed" "$SIGNING_PLAN"; then
+  printf '%s\n' "Signing artifact guard plan must be marked completed." >&2
+  exit 1
+fi
+
+if ! grep -Fq "make check" "$SIGNING_PLAN"; then
+  printf '%s\n' "Signing artifact guard plan must record make check verification." >&2
   exit 1
 fi
 

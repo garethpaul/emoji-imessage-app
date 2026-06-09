@@ -79,6 +79,9 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - No required secret or credential file is used by this extension.
 - Do not commit signing certificates, provisioning profiles, Xcode user data,
   build products, or private assets.
+- `.gitignore` and `scripts/check-baseline.sh` guard common signing artifacts
+  such as `.mobileprovision`, `.provisionprofile`, `.p12`, `.cer`, and
+  `.xcarchive` files.
 
 ## Security and Privacy Notes
 
@@ -100,6 +103,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   Swift privacy source guard.
 - See `docs/plans/2026-06-09-emoji-imessage-asset-name-normalization.md` for
   sticker asset-name normalization.
+- See `docs/plans/2026-06-09-emoji-imessage-signing-artifact-guard.md` for the
+  signing and local Xcode artifact guard.
 
 ## Contributing
 

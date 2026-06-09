@@ -36,6 +36,8 @@ Current baseline:
 - The checked-in Swift source has no network or analytics behavior.
 - The baseline scans Swift sources for network, analytics, ad identifier,
   camera, microphone, location, and webview APIs.
+- Signing/provisioning files, Xcode user data, archives, and build outputs stay
+  ignored and untracked.
 
 Next priorities:
 

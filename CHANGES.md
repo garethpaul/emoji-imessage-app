@@ -2,6 +2,8 @@
 
 ## 2026-06-09
 
+- Added a guard for signing, provisioning, Xcode user, archive, and build
+  artifacts.
 - Added a Swift source privacy guard for network, analytics, ad identifier,
   camera, microphone, location, and webview APIs.
 - Made the sticker browser child controller optional instead of implicitly

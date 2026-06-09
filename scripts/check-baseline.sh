@@ -13,6 +13,7 @@ LIFECYCLE_PLAN="$ROOT_DIR/docs/plans/2026-06-09-emoji-imessage-child-lifecycle.m
 PRIVACY_PLAN="$ROOT_DIR/docs/plans/2026-06-09-emoji-imessage-privacy-source-guard.md"
 ASSET_NAME_PLAN="$ROOT_DIR/docs/plans/2026-06-09-emoji-imessage-asset-name-normalization.md"
 SIGNING_PLAN="$ROOT_DIR/docs/plans/2026-06-09-emoji-imessage-signing-artifact-guard.md"
+LOGGING_PLAN="$ROOT_DIR/docs/plans/2026-06-09-emoji-imessage-debug-logging-guard.md"
 
 require_file() {
   path=$1
@@ -39,6 +40,7 @@ for path in \
   "docs/plans/2026-06-09-emoji-imessage-privacy-source-guard.md" \
   "docs/plans/2026-06-09-emoji-imessage-asset-name-normalization.md" \
   "docs/plans/2026-06-09-emoji-imessage-signing-artifact-guard.md" \
+  "docs/plans/2026-06-09-emoji-imessage-debug-logging-guard.md" \
   "docs/plans/2026-06-09-emoji-imessage-child-lifecycle.md" \
   "docs/plans/2026-06-08-emoji-imessage-sticker-reload.md" \
   "docs/plans/2026-06-08-emoji-imessage-app-maintenance-baseline.md"; do
@@ -49,14 +51,23 @@ if ! grep -Fq "make check" "$README" ||
   ! grep -Fq "Twemoji image set" "$README" ||
   ! grep -Fq "iMessage extension" "$README" ||
   ! grep -Fq ".mobileprovision" "$README" ||
+  ! grep -Fq "debug logging" "$README" ||
   ! grep -Fq "no network or analytics behavior" "$README"; then
-  printf '%s\n' "README must document the extension scope, asset set, privacy posture, signing artifact guard, and check command." >&2
+  printf '%s\n' "README must document the extension scope, asset set, privacy posture, debug logging guard, signing artifact guard, and check command." >&2
   exit 1
 fi
 
 if ! grep -Fq "Signing certificates" "$ROOT_DIR/SECURITY.md" ||
-  ! grep -Fq "archives, and build outputs" "$ROOT_DIR/SECURITY.md"; then
-  printf '%s\n' "SECURITY must document signing and local Xcode artifact exclusions." >&2
+  ! grep -Fq "archives, and build outputs" "$ROOT_DIR/SECURITY.md" ||
+  ! grep -Fq "debug logging" "$ROOT_DIR/SECURITY.md"; then
+  printf '%s\n' "SECURITY must document signing, debug logging, and local Xcode artifact exclusions." >&2
+  exit 1
+fi
+
+if ! grep -Fq "lint: check" "$ROOT_DIR/Makefile" ||
+  ! grep -Fq "test: check" "$ROOT_DIR/Makefile" ||
+  ! grep -Fq "build: check" "$ROOT_DIR/Makefile"; then
+  printf '%s\n' "Makefile must expose lint, test, and build aliases for the baseline gate." >&2
   exit 1
 fi
 
@@ -74,8 +85,9 @@ if [ -n "$tracked_signing_artifacts" ]; then
 fi
 
 if ! grep -Fq "scripts/check-baseline.sh" "$VISION" ||
-  ! grep -Fq "deterministic sticker loading" "$VISION"; then
-  printf '%s\n' "VISION must include the baseline command and current sticker-loading posture." >&2
+  ! grep -Fq "deterministic sticker loading" "$VISION" ||
+  ! grep -Fq "debug logging" "$VISION"; then
+  printf '%s\n' "VISION must include the baseline command, debug logging posture, and current sticker-loading posture." >&2
   exit 1
 fi
 
@@ -140,6 +152,25 @@ import sys
 from pathlib import Path
 
 root = Path(sys.argv[1])
+logging_tokens = {
+    "print(": "debug print",
+    "debugPrint(": "debug print",
+    "NSLog": "NSLog call",
+}
+
+logging_violations = []
+for path in sorted((root / "MessagesExtension").glob("*.swift")):
+    source = path.read_text(encoding="utf-8")
+    for token, reason in logging_tokens.items():
+        if token in source:
+            logging_violations.append(f"{path.relative_to(root)} contains {token} ({reason})")
+
+if logging_violations:
+    print("Messages extension Swift sources must not log bundle paths, asset names, or errors.", file=sys.stderr)
+    for violation in logging_violations:
+        print(f"- {violation}", file=sys.stderr)
+    raise SystemExit(1)
+
 forbidden_tokens = {
     "URLSession": "network session",
     "NSURLConnection": "network connection",
@@ -250,6 +281,16 @@ fi
 
 if ! grep -Fq "status: completed" "$SIGNING_PLAN"; then
   printf '%s\n' "Signing artifact guard plan must be marked completed." >&2
+  exit 1
+fi
+
+if ! grep -Fq "status: completed" "$LOGGING_PLAN"; then
+  printf '%s\n' "Debug logging guard plan must be marked completed." >&2
+  exit 1
+fi
+
+if ! grep -Fq "make check" "$LOGGING_PLAN"; then
+  printf '%s\n' "Debug logging guard plan must record make check verification." >&2
   exit 1
 fi
 

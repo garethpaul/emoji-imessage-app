@@ -54,6 +54,8 @@ toolchain for full builds or migration work.
 - Sticker asset names are derived by stripping only the PNG path extension.
 - The extension does not request device permissions and does not include network
   or analytics code in the checked-in Swift sources.
+- Sticker loading fails closed without debug logging of bundle paths, asset
+  names, or errors.
 
 ## Testing and Verification
 
@@ -61,13 +63,18 @@ Run the static maintenance gate:
 
 ```bash
 make check
+make lint
+make test
+make build
 ```
 
 `make check` validates the Xcode project references, extension plists, Swift
 source invariants, child-controller setup order, and bundled Twemoji PNG
 signatures. It also scans Swift sources for network, analytics, ad identifier,
-camera, microphone, location, and webview APIs. When `xcodebuild` is installed,
-it checks that Xcode can read `Twemoji.xcodeproj`.
+camera, microphone, location, webview APIs, and debug logging. `make lint`,
+`make test`, and `make build` run the same static baseline on machines without
+Xcode. When `xcodebuild` is installed, the baseline checks that Xcode can read
+`Twemoji.xcodeproj`.
 
 For full Apple-platform verification, open `Twemoji.xcodeproj` in Xcode and run
 the app/extension on an iOS simulator or device.
@@ -89,6 +96,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   bundle resources, signing, and Messages extension lifecycle callbacks.
 - Keep the extension free of message-content collection, analytics, and network
   behavior unless a future change documents the user value and privacy model.
+- Keep sticker loading free of debug logging that reveals bundle paths, asset
+  names, or local errors.
 
 ## Maintenance Notes
 
@@ -105,6 +114,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   sticker asset-name normalization.
 - See `docs/plans/2026-06-09-emoji-imessage-signing-artifact-guard.md` for the
   signing and local Xcode artifact guard.
+- See `docs/plans/2026-06-09-emoji-imessage-debug-logging-guard.md` for the
+  Swift debug logging guard.
 
 ## Contributing
 

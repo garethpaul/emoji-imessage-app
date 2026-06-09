@@ -2,6 +2,8 @@
 
 ## 2026-06-09
 
+- Removed sticker-loading debug logging and exposed `make lint`, `make test`,
+  and `make build` aliases for the static baseline.
 - Added a guard for signing, provisioning, Xcode user, archive, and build
   artifacts.
 - Added a Swift source privacy guard for network, analytics, ad identifier,

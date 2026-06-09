@@ -34,8 +34,10 @@ Current baseline:
 - The sticker browser child controller is retained explicitly and follows the
   add-child, add-view, did-move lifecycle order.
 - The checked-in Swift source has no network or analytics behavior.
+- Sticker loading avoids debug logging of bundle paths, asset names, and local
+  errors.
 - The baseline scans Swift sources for network, analytics, ad identifier,
-  camera, microphone, location, and webview APIs.
+  camera, microphone, location, webview APIs, and debug logging.
 - Signing/provisioning files, Xcode user data, archives, and build outputs stay
   ignored and untracked.
 

@@ -17,7 +17,6 @@ class TwemojiBrowserViewController: MSStickerBrowserViewController {
         stickers.removeAll()
 
         guard let docsPath = Bundle.main().resourcePath else {
-            print("ERROR: Unable to resolve bundle resource path")
             return
         }
 
@@ -30,13 +29,12 @@ class TwemojiBrowserViewController: MSStickerBrowserViewController {
                 createSticker(asset: asset, localizedDescription: asset)
             }
         } catch {
-            print("ERROR: Unable to read directory: \(docsPath): \(error)")
+            return
         }
     }
     
     func createSticker(asset:String, localizedDescription: String) {
         guard let stickerPath = Bundle.main().pathForResource(asset, ofType: "png") else {
-            print("couldn't create the sticker path for", asset)
             return
         }
         let stickerURL = URL(fileURLWithPath: stickerPath)
@@ -45,7 +43,6 @@ class TwemojiBrowserViewController: MSStickerBrowserViewController {
             try sticker = MSSticker(contentsOfFileURL: stickerURL, localizedDescription: localizedDescription)
             stickers.append(sticker)
         } catch {
-            print(error)
             return
         }
     }

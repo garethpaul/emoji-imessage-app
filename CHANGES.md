@@ -2,6 +2,8 @@
 
 ## 2026-06-09
 
+- Made sticker loading own browser reloads so failed load attempts clear stale
+  visible stickers.
 - Loaded stickers from exact discovered PNG resource paths instead of
   reconstructing resource lookups with fixed extension casing.
 - Filtered sticker resources by case-insensitive PNG path extension.

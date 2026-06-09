@@ -56,6 +56,8 @@ toolchain for full builds or migration work.
 - Sticker creation uses exact discovered PNG file paths, keeping resource
   discovery and loading aligned with bundled filename casing.
 - Sticker asset names are derived by stripping only the PNG path extension.
+- Sticker loading reloads the sticker browser after every load attempt, including
+  fail-closed resource lookup paths.
 - The extension does not request device permissions and does not include network
   or analytics code in the checked-in Swift sources.
 - Sticker loading fails closed without debug logging of bundle paths, asset
@@ -102,6 +104,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   behavior unless a future change documents the user value and privacy model.
 - Keep sticker loading free of debug logging that reveals bundle paths, asset
   names, or local errors.
+- Keep sticker loading responsible for its own browser reload so failed loads do
+  not leave stale stickers visible.
 
 ## Maintenance Notes
 
@@ -124,6 +128,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   signing and local Xcode artifact guard.
 - See `docs/plans/2026-06-09-emoji-imessage-debug-logging-guard.md` for the
   Swift debug logging guard.
+- See `docs/plans/2026-06-09-emoji-imessage-load-reload-ownership.md` for sticker
+  browser reload ownership during sticker loading.
 
 ## Contributing
 

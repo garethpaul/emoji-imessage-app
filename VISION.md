@@ -32,6 +32,8 @@ Current baseline:
 - Sticker creation uses exact discovered PNG file paths so resource loading
   stays aligned with discovery.
 - Sticker asset names are derived by stripping only the PNG path extension.
+- Sticker loading reloads the sticker browser after every load attempt, including
+  fail-closed resource lookup paths.
 - The sticker browser is sized to the Messages extension container bounds and
   resizes with the host view.
 - The sticker browser child controller is retained explicitly and follows the

@@ -26,7 +26,6 @@ class MessagesViewController: MSMessagesAppViewController {
         browserViewController.didMove(toParentViewController: self)
         
         browserViewController.loadStickers()
-        browserViewController.stickerBrowserView.reloadData()
         // Do any additional setup after loading the view.
     }
     

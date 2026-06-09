@@ -16,6 +16,7 @@ PNG_EXTENSION_PLAN="$ROOT_DIR/docs/plans/2026-06-09-emoji-imessage-png-extension
 RESOURCE_PATH_PLAN="$ROOT_DIR/docs/plans/2026-06-09-emoji-imessage-discovered-resource-paths.md"
 SIGNING_PLAN="$ROOT_DIR/docs/plans/2026-06-09-emoji-imessage-signing-artifact-guard.md"
 LOGGING_PLAN="$ROOT_DIR/docs/plans/2026-06-09-emoji-imessage-debug-logging-guard.md"
+LOAD_RELOAD_PLAN="$ROOT_DIR/docs/plans/2026-06-09-emoji-imessage-load-reload-ownership.md"
 
 require_file() {
   path=$1
@@ -45,6 +46,7 @@ for path in \
   "docs/plans/2026-06-09-emoji-imessage-discovered-resource-paths.md" \
   "docs/plans/2026-06-09-emoji-imessage-signing-artifact-guard.md" \
   "docs/plans/2026-06-09-emoji-imessage-debug-logging-guard.md" \
+  "docs/plans/2026-06-09-emoji-imessage-load-reload-ownership.md" \
   "docs/plans/2026-06-09-emoji-imessage-child-lifecycle.md" \
   "docs/plans/2026-06-08-emoji-imessage-sticker-reload.md" \
   "docs/plans/2026-06-08-emoji-imessage-app-maintenance-baseline.md"; do
@@ -121,10 +123,17 @@ PY
 
 if ! grep -Fq "guard let docsPath = Bundle.main().resourcePath" "$BROWSER_VIEW" ||
   ! grep -Fq "stickers.removeAll()" "$BROWSER_VIEW" ||
+  ! grep -Fq "defer {" "$BROWSER_VIEW" ||
+  ! grep -Fq "stickerBrowserView.reloadData()" "$BROWSER_VIEW" ||
   ! grep -Fq ".sorted()" "$BROWSER_VIEW" ||
   grep -Fq "resourcePath!" "$BROWSER_VIEW" ||
   grep -Fq 'localizedDescription: "asset"' "$BROWSER_VIEW"; then
-  printf '%s\n' "Sticker loading must avoid force unwraps, clear previous data, sort resources, and use per-asset descriptions." >&2
+  printf '%s\n' "Sticker loading must avoid force unwraps, clear previous data, reload the browser, sort resources, and use per-asset descriptions." >&2
+  exit 1
+fi
+
+if grep -Fq "browserViewController.stickerBrowserView.reloadData()" "$MESSAGES_VIEW"; then
+  printf '%s\n' "MessagesViewController must let loadStickers own sticker browser reloads." >&2
   exit 1
 fi
 
@@ -155,9 +164,11 @@ from pathlib import Path
 
 source = Path(sys.argv[1]).read_text(encoding="utf-8")
 clear = source.find("stickers.removeAll()")
+defer = source.find("defer {")
+reload = source.find("stickerBrowserView.reloadData()")
 guard = source.find("guard let docsPath = Bundle.main().resourcePath")
-if clear == -1 or guard == -1 or clear > guard:
-    print("Sticker loading must clear stale stickers before resource resolution.", file=sys.stderr)
+if -1 in (clear, defer, reload, guard) or not (clear < defer < reload < guard):
+    print("Sticker loading must clear stale stickers and schedule reload before resource resolution.", file=sys.stderr)
     raise SystemExit(1)
 PY
 
@@ -321,6 +332,16 @@ if ! grep -Fq "make check" "$LOGGING_PLAN"; then
   exit 1
 fi
 
+if ! grep -Fq "Status: Completed" "$LOAD_RELOAD_PLAN"; then
+  printf '%s\n' "Load reload ownership plan must be marked completed." >&2
+  exit 1
+fi
+
+if ! grep -Fq "make check" "$LOAD_RELOAD_PLAN"; then
+  printf '%s\n' "Load reload ownership plan must record make check verification." >&2
+  exit 1
+fi
+
 if ! grep -Fq "make check" "$SIGNING_PLAN"; then
   printf '%s\n' "Signing artifact guard plan must record make check verification." >&2
   exit 1
@@ -345,6 +366,13 @@ if ! grep -Fq "exact discovered PNG file paths" "$README" ||
   ! grep -Fq "exact discovered bundle file paths" "$ROOT_DIR/SECURITY.md" ||
   ! grep -Fq "exact discovered PNG file paths" "$VISION"; then
   printf '%s\n' "Docs must describe exact discovered PNG resource path loading." >&2
+  exit 1
+fi
+
+if ! grep -Fq "reloads the sticker browser after every load attempt" "$README" ||
+  ! grep -Fq "reloads the sticker browser after every load attempt" "$ROOT_DIR/SECURITY.md" ||
+  ! grep -Fq "reloads the sticker browser after every load attempt" "$VISION"; then
+  printf '%s\n' "Docs must describe sticker browser reload ownership." >&2
   exit 1
 fi
 

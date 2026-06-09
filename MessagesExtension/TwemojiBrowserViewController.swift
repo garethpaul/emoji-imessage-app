@@ -15,6 +15,9 @@ class TwemojiBrowserViewController: MSStickerBrowserViewController {
     
     func loadStickers() {
         stickers.removeAll()
+        defer {
+            stickerBrowserView.reloadData()
+        }
 
         guard let docsPath = Bundle.main().resourcePath else {
             return

@@ -13,6 +13,7 @@ LIFECYCLE_PLAN="$ROOT_DIR/docs/plans/2026-06-09-emoji-imessage-child-lifecycle.m
 PRIVACY_PLAN="$ROOT_DIR/docs/plans/2026-06-09-emoji-imessage-privacy-source-guard.md"
 ASSET_NAME_PLAN="$ROOT_DIR/docs/plans/2026-06-09-emoji-imessage-asset-name-normalization.md"
 PNG_EXTENSION_PLAN="$ROOT_DIR/docs/plans/2026-06-09-emoji-imessage-png-extension-filter.md"
+RESOURCE_PATH_PLAN="$ROOT_DIR/docs/plans/2026-06-09-emoji-imessage-discovered-resource-paths.md"
 SIGNING_PLAN="$ROOT_DIR/docs/plans/2026-06-09-emoji-imessage-signing-artifact-guard.md"
 LOGGING_PLAN="$ROOT_DIR/docs/plans/2026-06-09-emoji-imessage-debug-logging-guard.md"
 
@@ -41,6 +42,7 @@ for path in \
   "docs/plans/2026-06-09-emoji-imessage-privacy-source-guard.md" \
   "docs/plans/2026-06-09-emoji-imessage-asset-name-normalization.md" \
   "docs/plans/2026-06-09-emoji-imessage-png-extension-filter.md" \
+  "docs/plans/2026-06-09-emoji-imessage-discovered-resource-paths.md" \
   "docs/plans/2026-06-09-emoji-imessage-signing-artifact-guard.md" \
   "docs/plans/2026-06-09-emoji-imessage-debug-logging-guard.md" \
   "docs/plans/2026-06-09-emoji-imessage-child-lifecycle.md" \
@@ -136,6 +138,14 @@ if ! grep -Fq "private func isPNGResource" "$BROWSER_VIEW" ||
   ! grep -Fq 'pathExtension.lowercased() == "png"' "$BROWSER_VIEW" ||
   grep -Fq 'file.hasSuffix(".png")' "$BROWSER_VIEW"; then
   printf '%s\n' "Sticker loading must filter PNG resources by case-insensitive path extension." >&2
+  exit 1
+fi
+
+if ! grep -Fq "createSticker(file: file, resourcePath: docsPath)" "$BROWSER_VIEW" ||
+  ! grep -Fq "func createSticker(file: String, resourcePath: String)" "$BROWSER_VIEW" ||
+  ! grep -Fq "appendingPathComponent(file)" "$BROWSER_VIEW" ||
+  grep -Fq 'pathForResource(asset, ofType: "png")' "$BROWSER_VIEW"; then
+  printf '%s\n' "Sticker creation must use exact discovered PNG file paths instead of reconstructing resource lookups." >&2
   exit 1
 fi
 
@@ -318,6 +328,23 @@ fi
 
 if ! grep -Fq "make check" "$PNG_EXTENSION_PLAN"; then
   printf '%s\n' "PNG extension filter plan must record make check verification." >&2
+  exit 1
+fi
+
+if ! grep -Fq "status: completed" "$RESOURCE_PATH_PLAN"; then
+  printf '%s\n' "Discovered resource path plan must be marked completed." >&2
+  exit 1
+fi
+
+if ! grep -Fq "make check" "$RESOURCE_PATH_PLAN"; then
+  printf '%s\n' "Discovered resource path plan must record make check verification." >&2
+  exit 1
+fi
+
+if ! grep -Fq "exact discovered PNG file paths" "$README" ||
+  ! grep -Fq "exact discovered bundle file paths" "$ROOT_DIR/SECURITY.md" ||
+  ! grep -Fq "exact discovered PNG file paths" "$VISION"; then
+  printf '%s\n' "Docs must describe exact discovered PNG resource path loading." >&2
   exit 1
 fi
 

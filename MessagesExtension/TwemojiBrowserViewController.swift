@@ -25,8 +25,7 @@ class TwemojiBrowserViewController: MSStickerBrowserViewController {
         do {
             let directoryContents = try fileManager.contentsOfDirectory(atPath: docsPath).sorted()
             for file in directoryContents where isPNGResource(file) {
-                let asset = (file as NSString).deletingPathExtension
-                createSticker(asset: asset, localizedDescription: asset)
+                createSticker(file: file, resourcePath: docsPath)
             }
         } catch {
             return
@@ -37,10 +36,9 @@ class TwemojiBrowserViewController: MSStickerBrowserViewController {
         return (file as NSString).pathExtension.lowercased() == "png"
     }
     
-    func createSticker(asset:String, localizedDescription: String) {
-        guard let stickerPath = Bundle.main().pathForResource(asset, ofType: "png") else {
-            return
-        }
+    func createSticker(file: String, resourcePath: String) {
+        let localizedDescription = (file as NSString).deletingPathExtension
+        let stickerPath = (resourcePath as NSString).appendingPathComponent(file)
         let stickerURL = URL(fileURLWithPath: stickerPath)
         let sticker: MSSticker
         do {

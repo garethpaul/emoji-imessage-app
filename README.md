@@ -53,6 +53,8 @@ toolchain for full builds or migration work.
   deterministically by filename.
 - Sticker discovery filters bundled resources by case-insensitive PNG path
   extension.
+- Sticker creation uses exact discovered PNG file paths, keeping resource
+  discovery and loading aligned with bundled filename casing.
 - Sticker asset names are derived by stripping only the PNG path extension.
 - The extension does not request device permissions and does not include network
   or analytics code in the checked-in Swift sources.
@@ -116,6 +118,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   sticker asset-name normalization.
 - See `docs/plans/2026-06-09-emoji-imessage-png-extension-filter.md` for the
   sticker PNG extension filter.
+- See `docs/plans/2026-06-09-emoji-imessage-discovered-resource-paths.md` for
+  exact discovered PNG resource path loading.
 - See `docs/plans/2026-06-09-emoji-imessage-signing-artifact-guard.md` for the
   signing and local Xcode artifact guard.
 - See `docs/plans/2026-06-09-emoji-imessage-debug-logging-guard.md` for the

@@ -2,6 +2,8 @@
 
 ## 2026-06-09
 
+- Loaded stickers from exact discovered PNG resource paths instead of
+  reconstructing resource lookups with fixed extension casing.
 - Filtered sticker resources by case-insensitive PNG path extension.
 - Removed sticker-loading debug logging and exposed `make lint`, `make test`,
   and `make build` aliases for the static baseline.

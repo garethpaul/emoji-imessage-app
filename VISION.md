@@ -29,6 +29,8 @@ Current baseline:
 - Sticker discovery uses deterministic sticker loading by sorted bundle
   filename and clears stale state before reloading.
 - Sticker discovery filters resources by case-insensitive PNG path extension.
+- Sticker creation uses exact discovered PNG file paths so resource loading
+  stays aligned with discovery.
 - Sticker asset names are derived by stripping only the PNG path extension.
 - The sticker browser is sized to the Messages extension container bounds and
   resizes with the host view.

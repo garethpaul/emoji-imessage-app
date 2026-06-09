@@ -39,6 +39,9 @@ than broad string replacement.
 Sticker resource discovery should filter by path extension case-insensitively
 so bundled PNG variants are treated consistently.
 
+Sticker creation should load exact discovered bundle file paths instead of
+reconstructing resource lookups with a fixed extension casing.
+
 Signing certificates, provisioning profiles, certificate bundles, Xcode user
 data, archives, and build outputs should remain untracked.
 

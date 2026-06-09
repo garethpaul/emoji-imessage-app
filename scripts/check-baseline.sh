@@ -10,6 +10,7 @@ BROWSER_VIEW="$ROOT_DIR/MessagesExtension/TwemojiBrowserViewController.swift"
 PLAN="$ROOT_DIR/docs/plans/2026-06-08-emoji-imessage-app-maintenance-baseline.md"
 RELOAD_PLAN="$ROOT_DIR/docs/plans/2026-06-08-emoji-imessage-sticker-reload.md"
 LIFECYCLE_PLAN="$ROOT_DIR/docs/plans/2026-06-09-emoji-imessage-child-lifecycle.md"
+PRIVACY_PLAN="$ROOT_DIR/docs/plans/2026-06-09-emoji-imessage-privacy-source-guard.md"
 
 require_file() {
   path=$1
@@ -33,6 +34,7 @@ for path in \
   "MessagesExtension/Base.lproj/MainInterface.storyboard" \
   "MessagesExtension/MessagesViewController.swift" \
   "MessagesExtension/TwemojiBrowserViewController.swift" \
+  "docs/plans/2026-06-09-emoji-imessage-privacy-source-guard.md" \
   "docs/plans/2026-06-09-emoji-imessage-child-lifecycle.md" \
   "docs/plans/2026-06-08-emoji-imessage-sticker-reload.md" \
   "docs/plans/2026-06-08-emoji-imessage-app-maintenance-baseline.md"; do
@@ -104,6 +106,40 @@ if ! grep -Fq "SWIFT_VERSION = 3.0;" "$PROJECT" ||
 fi
 
 python3 - "$ROOT_DIR" <<'PY'
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1])
+forbidden_tokens = {
+    "URLSession": "network session",
+    "NSURLConnection": "network connection",
+    "WKWebView": "embedded web view",
+    "UIWebView": "embedded web view",
+    "http://": "cleartext URL literal",
+    "https://": "network URL literal",
+    "CLLocation": "location API",
+    "AVCapture": "camera or microphone capture API",
+    "ASIdentifierManager": "advertising identifier API",
+    "AdSupport": "advertising support framework",
+    "Analytics": "analytics API or label",
+    "Telemetry": "telemetry API or label",
+}
+
+violations = []
+for path in sorted((root / "MessagesExtension").glob("*.swift")):
+    source = path.read_text(encoding="utf-8")
+    for token, reason in forbidden_tokens.items():
+        if token in source:
+            violations.append(f"{path.relative_to(root)} contains {token} ({reason})")
+
+if violations:
+    print("Messages extension Swift sources must stay free of network, analytics, and permission APIs.", file=sys.stderr)
+    for violation in violations:
+        print(f"- {violation}", file=sys.stderr)
+    raise SystemExit(1)
+PY
+
+python3 - "$ROOT_DIR" <<'PY'
 import json
 import plistlib
 import sys
@@ -169,6 +205,11 @@ fi
 
 if ! grep -Fq "status: completed" "$LIFECYCLE_PLAN"; then
   printf '%s\n' "Child-controller lifecycle plan must be marked completed." >&2
+  exit 1
+fi
+
+if ! grep -Fq "status: completed" "$PRIVACY_PLAN"; then
+  printf '%s\n' "Privacy source guard plan must be marked completed." >&2
   exit 1
 fi
 

@@ -33,6 +33,8 @@ Current baseline:
 - The sticker browser child controller is retained explicitly and follows the
   add-child, add-view, did-move lifecycle order.
 - The checked-in Swift source has no network or analytics behavior.
+- The baseline scans Swift sources for network, analytics, ad identifier,
+  camera, microphone, location, and webview APIs.
 
 Next priorities:
 

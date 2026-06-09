@@ -2,6 +2,8 @@
 
 ## 2026-06-09
 
+- Added a Swift source privacy guard for network, analytics, ad identifier,
+  camera, microphone, location, and webview APIs.
 - Made the sticker browser child controller optional instead of implicitly
   unwrapped.
 - Added the child browser view before calling `didMove`, matching UIKit child

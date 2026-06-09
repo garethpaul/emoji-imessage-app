@@ -64,8 +64,9 @@ make check
 
 `make check` validates the Xcode project references, extension plists, Swift
 source invariants, child-controller setup order, and bundled Twemoji PNG
-signatures. When `xcodebuild` is installed, it also checks that Xcode can read
-`Twemoji.xcodeproj`.
+signatures. It also scans Swift sources for network, analytics, ad identifier,
+camera, microphone, location, and webview APIs. When `xcodebuild` is installed,
+it checks that Xcode can read `Twemoji.xcodeproj`.
 
 For full Apple-platform verification, open `Twemoji.xcodeproj` in Xcode and run
 the app/extension on an iOS simulator or device.
@@ -94,6 +95,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   the current baseline plan.
 - See `docs/plans/2026-06-09-emoji-imessage-child-lifecycle.md` for the
   sticker browser child-controller lifecycle guard.
+- See `docs/plans/2026-06-09-emoji-imessage-privacy-source-guard.md` for the
+  Swift privacy source guard.
 
 ## Contributing
 

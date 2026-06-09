@@ -26,7 +26,7 @@ class TwemojiBrowserViewController: MSStickerBrowserViewController {
         do {
             let directoryContents = try fileManager.contentsOfDirectory(atPath: docsPath).sorted()
             for file in directoryContents where file.hasSuffix(".png") {
-                let asset = file.replacingOccurrences(of: ".png", with: "")
+                let asset = (file as NSString).deletingPathExtension
                 createSticker(asset: asset, localizedDescription: asset)
             }
         } catch {

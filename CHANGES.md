@@ -9,6 +9,7 @@
 - Added the child browser view before calling `didMove`, matching UIKit child
   controller lifecycle order.
 - Added a static baseline guard for the child-controller setup.
+- Normalized sticker asset names by stripping only the PNG path extension.
 
 ## 2026-06-08
 

@@ -11,6 +11,7 @@ PLAN="$ROOT_DIR/docs/plans/2026-06-08-emoji-imessage-app-maintenance-baseline.md
 RELOAD_PLAN="$ROOT_DIR/docs/plans/2026-06-08-emoji-imessage-sticker-reload.md"
 LIFECYCLE_PLAN="$ROOT_DIR/docs/plans/2026-06-09-emoji-imessage-child-lifecycle.md"
 PRIVACY_PLAN="$ROOT_DIR/docs/plans/2026-06-09-emoji-imessage-privacy-source-guard.md"
+ASSET_NAME_PLAN="$ROOT_DIR/docs/plans/2026-06-09-emoji-imessage-asset-name-normalization.md"
 
 require_file() {
   path=$1
@@ -35,6 +36,7 @@ for path in \
   "MessagesExtension/MessagesViewController.swift" \
   "MessagesExtension/TwemojiBrowserViewController.swift" \
   "docs/plans/2026-06-09-emoji-imessage-privacy-source-guard.md" \
+  "docs/plans/2026-06-09-emoji-imessage-asset-name-normalization.md" \
   "docs/plans/2026-06-09-emoji-imessage-child-lifecycle.md" \
   "docs/plans/2026-06-08-emoji-imessage-sticker-reload.md" \
   "docs/plans/2026-06-08-emoji-imessage-app-maintenance-baseline.md"; do
@@ -82,6 +84,12 @@ if ! grep -Fq "guard let docsPath = Bundle.main().resourcePath" "$BROWSER_VIEW" 
   grep -Fq "resourcePath!" "$BROWSER_VIEW" ||
   grep -Fq 'localizedDescription: "asset"' "$BROWSER_VIEW"; then
   printf '%s\n' "Sticker loading must avoid force unwraps, clear previous data, sort resources, and use per-asset descriptions." >&2
+  exit 1
+fi
+
+if ! grep -Fq "(file as NSString).deletingPathExtension" "$BROWSER_VIEW" ||
+  grep -Fq 'replacingOccurrences(of: ".png", with: "")' "$BROWSER_VIEW"; then
+  printf '%s\n' "Sticker loading must derive asset names by stripping only the path extension." >&2
   exit 1
 fi
 
@@ -210,6 +218,11 @@ fi
 
 if ! grep -Fq "status: completed" "$PRIVACY_PLAN"; then
   printf '%s\n' "Privacy source guard plan must be marked completed." >&2
+  exit 1
+fi
+
+if ! grep -Fq "status: completed" "$ASSET_NAME_PLAN"; then
+  printf '%s\n' "Asset-name normalization plan must be marked completed." >&2
   exit 1
 fi
 

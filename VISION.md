@@ -28,6 +28,7 @@ Current baseline:
   Swift source invariants, and Twemoji PNG signatures.
 - Sticker discovery uses deterministic sticker loading by sorted bundle
   filename and clears stale state before reloading.
+- Sticker asset names are derived by stripping only the PNG path extension.
 - The sticker browser is sized to the Messages extension container bounds and
   resizes with the host view.
 - The sticker browser child controller is retained explicitly and follows the

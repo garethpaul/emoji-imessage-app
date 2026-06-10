@@ -2,6 +2,10 @@
 
 ## 2026-06-10
 
+- Upgraded bundled sticker checks from PNG signature sniffing to complete chunk
+  boundary, type, CRC, dimension, image-data, and terminal-marker validation.
+- Added a mutation-tested plan and documentation for sticker resource
+  integrity failures that would otherwise be skipped at runtime.
 - Added a pinned, read-only `macos-15` GitHub Actions workflow that runs the
   maintenance baseline and hosted Xcode project parse.
 - Added cancellation and a ten-minute timeout, then made the workflow and CI

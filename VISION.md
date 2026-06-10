@@ -47,6 +47,8 @@ Current baseline:
   ignored and untracked.
 - GitHub Actions runs `make check` on a fixed macOS runner so the Xcode project
   parse is covered before review.
+- The maintenance gate parses every bundled sticker PNG and verifies complete
+  chunk structure and CRC integrity before review.
 
 Next priorities:
 

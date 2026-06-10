@@ -18,6 +18,7 @@ SIGNING_PLAN="$ROOT_DIR/docs/plans/2026-06-09-emoji-imessage-signing-artifact-gu
 LOGGING_PLAN="$ROOT_DIR/docs/plans/2026-06-09-emoji-imessage-debug-logging-guard.md"
 LOAD_RELOAD_PLAN="$ROOT_DIR/docs/plans/2026-06-09-emoji-imessage-load-reload-ownership.md"
 CI_PLAN="$ROOT_DIR/docs/plans/2026-06-10-emoji-imessage-ci-baseline.md"
+PNG_INTEGRITY_PLAN="$ROOT_DIR/docs/plans/2026-06-10-emoji-png-integrity.md"
 CI_WORKFLOW="$ROOT_DIR/.github/workflows/check.yml"
 
 require_file() {
@@ -52,6 +53,7 @@ for path in \
   "docs/plans/2026-06-09-emoji-imessage-load-reload-ownership.md" \
   "docs/plans/2026-06-09-emoji-imessage-child-lifecycle.md" \
   "docs/plans/2026-06-10-emoji-imessage-ci-baseline.md" \
+  "docs/plans/2026-06-10-emoji-png-integrity.md" \
   "docs/plans/2026-06-08-emoji-imessage-sticker-reload.md" \
   "docs/plans/2026-06-08-emoji-imessage-app-maintenance-baseline.md"; do
   require_file "$path"
@@ -255,7 +257,9 @@ PY
 python3 - "$ROOT_DIR" <<'PY'
 import json
 import plistlib
+import struct
 import sys
+import zlib
 from pathlib import Path
 
 root = Path(sys.argv[1])
@@ -288,11 +292,59 @@ if len(pngs) < 800:
 
 bad = []
 for path in pngs:
-    with path.open("rb") as fh:
-        if fh.read(8) != b"\x89PNG\r\n\x1a\n":
-            bad.append(path.name)
+    data = path.read_bytes()
+    if data[:8] != b"\x89PNG\r\n\x1a\n":
+        bad.append(f"{path.name}: invalid signature")
+        continue
+
+    offset = 8
+    chunks = []
+    error = None
+    while offset < len(data):
+        if offset + 12 > len(data):
+            error = "truncated chunk header"
+            break
+        length = struct.unpack(">I", data[offset:offset + 4])[0]
+        chunk_type = data[offset + 4:offset + 8]
+        chunk_end = offset + 12 + length
+        if chunk_end > len(data):
+            error = "truncated chunk data"
+            break
+        if not all(65 <= byte <= 90 or 97 <= byte <= 122 for byte in chunk_type):
+            error = "invalid chunk type"
+            break
+
+        payload = data[offset + 8:offset + 8 + length]
+        expected_crc = struct.unpack(">I", data[offset + 8 + length:chunk_end])[0]
+        actual_crc = zlib.crc32(chunk_type + payload) & 0xFFFFFFFF
+        if actual_crc != expected_crc:
+            error = f"invalid {chunk_type.decode('ascii')} CRC"
+            break
+
+        chunks.append(chunk_type)
+        if len(chunks) == 1:
+            if chunk_type != b"IHDR" or length != 13:
+                error = "missing initial IHDR"
+                break
+            width, height = struct.unpack(">II", payload[:8])
+            if width == 0 or height == 0:
+                error = "invalid zero dimensions"
+                break
+
+        offset = chunk_end
+        if chunk_type == b"IEND":
+            if length != 0 or offset != len(data):
+                error = "invalid terminal IEND"
+            break
+
+    if error is None and b"IDAT" not in chunks:
+        error = "missing IDAT"
+    if error is None and (not chunks or chunks[-1] != b"IEND"):
+        error = "missing terminal IEND"
+    if error is not None:
+        bad.append(f"{path.name}: {error}")
 if bad:
-    fail("Non-PNG or corrupt PNG signature detected: " + ", ".join(bad[:10]))
+    fail("Invalid bundled PNG data: " + ", ".join(bad[:10]))
 
 project = (root / "Twemoji.xcodeproj/project.pbxproj").read_text(encoding="utf-8")
 resource_refs = project.count(".png in Resources")
@@ -367,6 +419,26 @@ if ! grep -Fq "Status: Completed" "$CI_PLAN" ||
   printf '%s\n' "CI baseline plan must remain completed with hosted Xcode verification recorded." >&2
   exit 1
 fi
+
+if ! grep -Fq "Status: Completed" "$PNG_INTEGRITY_PLAN" ||
+  ! grep -Fq "make check" "$PNG_INTEGRITY_PLAN" ||
+  ! grep -Fq "CRC" "$PNG_INTEGRITY_PLAN"; then
+  printf '%s\n' "PNG integrity plan must remain completed with CRC verification recorded." >&2
+  exit 1
+fi
+
+for png_integrity_contract in \
+  "zlib.crc32" \
+  "truncated chunk header" \
+  "invalid chunk type" \
+  "missing initial IHDR" \
+  "missing IDAT" \
+  "invalid terminal IEND"; do
+  if ! grep -Fq "$png_integrity_contract" "$ROOT_DIR/scripts/check-baseline.sh"; then
+    printf '%s\n' "PNG integrity contract is missing: $png_integrity_contract" >&2
+    exit 1
+  fi
+done
 
 if ! grep -Fq "make check" "$SIGNING_PLAN"; then
   printf '%s\n' "Signing artifact guard plan must record make check verification." >&2

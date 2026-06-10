@@ -82,6 +82,11 @@ camera, microphone, location, webview APIs, and debug logging. `make lint`,
 Xcode. When `xcodebuild` is installed, the baseline checks that Xcode can read
 `Twemoji.xcodeproj`.
 
+Bundled sticker validation parses every PNG chunk, verifies chunk boundaries
+and CRCs, requires a valid initial `IHDR`, positive dimensions, image data, and
+a terminal `IEND`, and rejects trailing bytes. This catches resource corruption
+before `MSSticker` silently skips an asset at runtime.
+
 GitHub Actions runs `make check` on a `macos-15` runner for pushes, pull
 requests, and manual dispatches. The hosted job pins checkout by commit, uses
 read-only repository permissions, and exercises the `xcodebuild -list` project
@@ -111,6 +116,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   names, or local errors.
 - Keep sticker loading responsible for its own browser reload so failed loads do
   not leave stale stickers visible.
+- Keep the bundled sticker corpus structurally valid; the baseline verifies PNG
+  chunks and CRCs rather than accepting signature-only files.
 
 ## Maintenance Notes
 
@@ -137,6 +144,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   browser reload ownership during sticker loading.
 - See `docs/plans/2026-06-10-emoji-imessage-ci-baseline.md` for the hosted macOS
   and Xcode project-parse baseline.
+- See `docs/plans/2026-06-10-emoji-png-integrity.md` for complete bundled PNG
+  structure and CRC validation.
 
 ## Contributing
 

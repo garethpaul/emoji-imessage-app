@@ -17,6 +17,8 @@ RESOURCE_PATH_PLAN="$ROOT_DIR/docs/plans/2026-06-09-emoji-imessage-discovered-re
 SIGNING_PLAN="$ROOT_DIR/docs/plans/2026-06-09-emoji-imessage-signing-artifact-guard.md"
 LOGGING_PLAN="$ROOT_DIR/docs/plans/2026-06-09-emoji-imessage-debug-logging-guard.md"
 LOAD_RELOAD_PLAN="$ROOT_DIR/docs/plans/2026-06-09-emoji-imessage-load-reload-ownership.md"
+CI_PLAN="$ROOT_DIR/docs/plans/2026-06-10-emoji-imessage-ci-baseline.md"
+CI_WORKFLOW="$ROOT_DIR/.github/workflows/check.yml"
 
 require_file() {
   path=$1
@@ -33,6 +35,7 @@ for path in \
   "README.md" \
   "SECURITY.md" \
   "VISION.md" \
+  ".github/workflows/check.yml" \
   "Twemoji.xcodeproj/project.pbxproj" \
   "Twemoji/Info.plist" \
   "Twemoji/Assets.xcassets/AppIcon.appiconset/Contents.json" \
@@ -48,6 +51,7 @@ for path in \
   "docs/plans/2026-06-09-emoji-imessage-debug-logging-guard.md" \
   "docs/plans/2026-06-09-emoji-imessage-load-reload-ownership.md" \
   "docs/plans/2026-06-09-emoji-imessage-child-lifecycle.md" \
+  "docs/plans/2026-06-10-emoji-imessage-ci-baseline.md" \
   "docs/plans/2026-06-08-emoji-imessage-sticker-reload.md" \
   "docs/plans/2026-06-08-emoji-imessage-app-maintenance-baseline.md"; do
   require_file "$path"
@@ -63,6 +67,21 @@ if ! grep -Fq "make check" "$README" ||
   printf '%s\n' "README must document the extension scope, asset set, privacy posture, debug logging guard, signing artifact guard, and check command." >&2
   exit 1
 fi
+
+for workflow_contract in \
+  "runs-on: macos-15" \
+  "permissions:" \
+  "contents: read" \
+  "workflow_dispatch:" \
+  "cancel-in-progress: true" \
+  "timeout-minutes: 10" \
+  "actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10" \
+  "run: make check"; do
+  if ! grep -Fq "$workflow_contract" "$CI_WORKFLOW"; then
+    printf '%s\n' "GitHub Actions Xcode baseline is missing: $workflow_contract" >&2
+    exit 1
+  fi
+done
 
 if ! grep -Fq "Signing certificates" "$ROOT_DIR/SECURITY.md" ||
   ! grep -Fq "archives, and build outputs" "$ROOT_DIR/SECURITY.md" ||
@@ -339,6 +358,13 @@ fi
 
 if ! grep -Fq "make check" "$LOAD_RELOAD_PLAN"; then
   printf '%s\n' "Load reload ownership plan must record make check verification." >&2
+  exit 1
+fi
+
+if ! grep -Fq "Status: Completed" "$CI_PLAN" ||
+  ! grep -Fq "xcodebuild -list" "$CI_PLAN" ||
+  ! grep -Fq "make check" "$CI_PLAN"; then
+  printf '%s\n' "CI baseline plan must remain completed with hosted Xcode verification recorded." >&2
   exit 1
 fi
 

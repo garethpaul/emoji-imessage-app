@@ -51,6 +51,10 @@ names, or local errors from the Messages extension.
 Sticker loading reloads the sticker browser after every load attempt so failed
 resource lookups clear stale visible sticker data.
 
+GitHub Actions runs the maintenance baseline on a fixed macOS runner with
+pinned checkout, read-only repository permissions, a bounded runtime, and an
+Xcode project parse.
+
 ## Dependency and Supply Chain Security
 
 Dependency updates should come from trusted package managers and should keep lockfiles in sync when lockfiles exist. Do not commit credentials, private keys, tokens, generated secrets, or machine-local configuration. If a vulnerability depends on a compromised package, typosquatting risk, insecure transitive dependency, or unsafe build step, include the package name, affected version, and the path through which it is used.

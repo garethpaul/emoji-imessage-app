@@ -45,6 +45,8 @@ Current baseline:
   camera, microphone, location, webview APIs, and debug logging.
 - Signing/provisioning files, Xcode user data, archives, and build outputs stay
   ignored and untracked.
+- GitHub Actions runs `make check` on a fixed macOS runner so the Xcode project
+  parse is covered before review.
 
 Next priorities:
 
@@ -58,6 +60,7 @@ Contribution rules:
 - One PR = one focused asset, extension, build, or documentation change.
 - Preserve license and attribution files.
 - Run `scripts/check-baseline.sh` before pushing changes.
+- Keep `.github/workflows/check.yml` aligned with the local maintenance gate.
 - Verify the extension in Messages when changing UI or assets on a machine with
   Xcode.
 - Keep generated build products and signing files out of git.

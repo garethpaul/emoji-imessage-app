@@ -82,6 +82,11 @@ camera, microphone, location, webview APIs, and debug logging. `make lint`,
 Xcode. When `xcodebuild` is installed, the baseline checks that Xcode can read
 `Twemoji.xcodeproj`.
 
+GitHub Actions runs `make check` on a `macos-15` runner for pushes, pull
+requests, and manual dispatches. The hosted job pins checkout by commit, uses
+read-only repository permissions, and exercises the `xcodebuild -list` project
+parse that is unavailable on non-Apple development machines.
+
 For full Apple-platform verification, open `Twemoji.xcodeproj` in Xcode and run
 the app/extension on an iOS simulator or device.
 
@@ -130,6 +135,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   Swift debug logging guard.
 - See `docs/plans/2026-06-09-emoji-imessage-load-reload-ownership.md` for sticker
   browser reload ownership during sticker loading.
+- See `docs/plans/2026-06-10-emoji-imessage-ci-baseline.md` for the hosted macOS
+  and Xcode project-parse baseline.
 
 ## Contributing
 

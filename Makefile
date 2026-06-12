@@ -1,4 +1,4 @@
-.PHONY: build check lint test xcode-list
+.PHONY: build check lint test xcode-list xcode-build
 
 XCODEBUILD ?= xcodebuild
 
@@ -13,3 +13,6 @@ build: check
 
 xcode-list:
 	@$(XCODEBUILD) -list -project Twemoji.xcodeproj
+
+xcode-build:
+	@$(XCODEBUILD) -project Twemoji.xcodeproj -target Twemoji -sdk iphonesimulator -configuration Debug CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO build

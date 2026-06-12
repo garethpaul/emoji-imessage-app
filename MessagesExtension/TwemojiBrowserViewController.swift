@@ -19,11 +19,11 @@ class TwemojiBrowserViewController: MSStickerBrowserViewController {
             stickerBrowserView.reloadData()
         }
 
-        guard let docsPath = Bundle.main().resourcePath else {
+        guard let docsPath = Bundle.main.resourcePath else {
             return
         }
 
-        let fileManager = FileManager.default()
+        let fileManager = FileManager.default
 
         do {
             let directoryContents = try fileManager.contentsOfDirectory(atPath: docsPath).sorted()

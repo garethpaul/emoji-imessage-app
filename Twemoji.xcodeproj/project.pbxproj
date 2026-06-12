@@ -3685,7 +3685,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.gpj.Twemoji.MessagesExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
-				SWIFT_VERSION = 3.0;
+				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
 		};
@@ -3698,7 +3698,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.gpj.Twemoji.MessagesExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
-				SWIFT_VERSION = 3.0;
+				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
 		};
@@ -3710,7 +3710,7 @@
 				INFOPLIST_FILE = Twemoji/Info.plist;
 				PRODUCT_BUNDLE_IDENTIFIER = com.gpj.Twemoji;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 3.0;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -3723,7 +3723,7 @@
 				INFOPLIST_FILE = Twemoji/Info.plist;
 				PRODUCT_BUNDLE_IDENTIFIER = com.gpj.Twemoji;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 3.0;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;

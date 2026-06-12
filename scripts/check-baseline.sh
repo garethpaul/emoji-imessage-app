@@ -19,6 +19,7 @@ LOGGING_PLAN="$ROOT_DIR/docs/plans/2026-06-09-emoji-imessage-debug-logging-guard
 LOAD_RELOAD_PLAN="$ROOT_DIR/docs/plans/2026-06-09-emoji-imessage-load-reload-ownership.md"
 CI_PLAN="$ROOT_DIR/docs/plans/2026-06-10-emoji-imessage-ci-baseline.md"
 PNG_INTEGRITY_PLAN="$ROOT_DIR/docs/plans/2026-06-10-emoji-png-integrity.md"
+SWIFT5_PLAN="$ROOT_DIR/docs/plans/2026-06-12-swift5-xcode-build-gate.md"
 CI_WORKFLOW="$ROOT_DIR/.github/workflows/check.yml"
 
 require_file() {
@@ -54,6 +55,7 @@ for path in \
   "docs/plans/2026-06-09-emoji-imessage-child-lifecycle.md" \
   "docs/plans/2026-06-10-emoji-imessage-ci-baseline.md" \
   "docs/plans/2026-06-10-emoji-png-integrity.md" \
+  "docs/plans/2026-06-12-swift5-xcode-build-gate.md" \
   "docs/plans/2026-06-08-emoji-imessage-sticker-reload.md" \
   "docs/plans/2026-06-08-emoji-imessage-app-maintenance-baseline.md"; do
   require_file "$path"
@@ -65,7 +67,9 @@ if ! grep -Fq "make check" "$README" ||
   ! grep -Fq ".mobileprovision" "$README" ||
   ! grep -Fq "debug logging" "$README" ||
   ! grep -Fq "case-insensitive PNG path" "$README" ||
-  ! grep -Fq "no network or analytics behavior" "$README"; then
+  ! grep -Fq "no network or analytics behavior" "$README" ||
+  ! grep -Fq "Swift 5" "$README" ||
+  ! grep -Fq "simulator build" "$README"; then
   printf '%s\n' "README must document the extension scope, asset set, privacy posture, debug logging guard, signing artifact guard, and check command." >&2
   exit 1
 fi
@@ -78,7 +82,8 @@ for workflow_contract in \
   "cancel-in-progress: true" \
   "timeout-minutes: 10" \
   "actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10" \
-  "run: make check"; do
+  "run: make check" \
+  "run: make xcode-build"; do
   if ! grep -Fq "$workflow_contract" "$CI_WORKFLOW"; then
     printf '%s\n' "GitHub Actions Xcode baseline is missing: $workflow_contract" >&2
     exit 1
@@ -95,7 +100,10 @@ fi
 
 if ! grep -Fq "lint: check" "$ROOT_DIR/Makefile" ||
   ! grep -Fq "test: check" "$ROOT_DIR/Makefile" ||
-  ! grep -Fq "build: check" "$ROOT_DIR/Makefile"; then
+  ! grep -Fq "build: check" "$ROOT_DIR/Makefile" ||
+  ! grep -Fq "xcode-build:" "$ROOT_DIR/Makefile" ||
+  ! grep -Fq "Twemoji.xcodeproj -target Twemoji -sdk iphonesimulator" "$ROOT_DIR/Makefile" ||
+  ! grep -Fq "CODE_SIGNING_ALLOWED=NO" "$ROOT_DIR/Makefile"; then
   printf '%s\n' "Makefile must expose lint, test, and build aliases for the baseline gate." >&2
   exit 1
 fi
@@ -134,15 +142,16 @@ import sys
 from pathlib import Path
 
 source = Path(sys.argv[1]).read_text(encoding="utf-8")
-add_child = source.find("self.addChildViewController(browserViewController)")
+add_child = source.find("self.addChild(browserViewController)")
 add_subview = source.find("self.view.addSubview(browserViewController.view)")
-did_move = source.find("browserViewController.didMove(toParentViewController: self)")
+did_move = source.find("browserViewController.didMove(toParent: self)")
 if -1 in (add_child, add_subview, did_move) or not (add_child < add_subview < did_move):
     print("Messages view must add the child controller, add its view, then call didMove.", file=sys.stderr)
     raise SystemExit(1)
 PY
 
-if ! grep -Fq "guard let docsPath = Bundle.main().resourcePath" "$BROWSER_VIEW" ||
+if ! grep -Fq "guard let docsPath = Bundle.main.resourcePath" "$BROWSER_VIEW" ||
+  ! grep -Fq "let fileManager = FileManager.default" "$BROWSER_VIEW" ||
   ! grep -Fq "stickers.removeAll()" "$BROWSER_VIEW" ||
   ! grep -Fq "defer {" "$BROWSER_VIEW" ||
   ! grep -Fq "stickerBrowserView.reloadData()" "$BROWSER_VIEW" ||
@@ -187,17 +196,18 @@ source = Path(sys.argv[1]).read_text(encoding="utf-8")
 clear = source.find("stickers.removeAll()")
 defer = source.find("defer {")
 reload = source.find("stickerBrowserView.reloadData()")
-guard = source.find("guard let docsPath = Bundle.main().resourcePath")
+guard = source.find("guard let docsPath = Bundle.main.resourcePath")
 if -1 in (clear, defer, reload, guard) or not (clear < defer < reload < guard):
     print("Sticker loading must clear stale stickers and schedule reload before resource resolution.", file=sys.stderr)
     raise SystemExit(1)
 PY
 
-if ! grep -Fq "SWIFT_VERSION = 3.0;" "$PROJECT" ||
+if [ "$(grep -Fc "SWIFT_VERSION = 5.0;" "$PROJECT")" -ne 4 ] ||
+  grep -Fq "SWIFT_VERSION = 3.0;" "$PROJECT" ||
   ! grep -Fq "IPHONEOS_DEPLOYMENT_TARGET = 10.0;" "$PROJECT" ||
   ! grep -Fq "MessagesViewController.swift in Sources" "$PROJECT" ||
   ! grep -Fq "TwemojiBrowserViewController.swift in Sources" "$PROJECT"; then
-  printf '%s\n' "Xcode project must preserve the Swift 3 / iOS 10 extension baseline." >&2
+  printf '%s\n' "Xcode project must preserve the Swift 5 / iOS 10 extension baseline." >&2
   exit 1
 fi
 

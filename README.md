@@ -6,8 +6,9 @@
 ## Overview
 
 `garethpaul/emoji-imessage-app` is a Swift iMessage extension that presents a
-bundled Twemoji image set as Messages stickers. It is a legacy Swift 3 / iOS 10
-Xcode project and has no network or analytics behavior in the checked-in source.
+bundled Twemoji image set as Messages stickers. It uses Swift 5 with an iOS 12
+deployment target and has no network or analytics behavior
+in the checked-in source.
 
 ## Repository Contents
 
@@ -43,8 +44,8 @@ git clone https://github.com/garethpaul/emoji-imessage-app.git
 cd emoji-imessage-app
 ```
 
-This project preserves a Swift 3 / iOS 10-era baseline. Use a matching Xcode
-toolchain for full builds or migration work.
+This project uses an iOS 12 deployment baseline with Swift 5 source and current
+UIKit/Foundation API names.
 
 ## Running or Using the Project
 
@@ -72,6 +73,7 @@ make check
 make lint
 make test
 make build
+make xcode-build
 ```
 
 `make check` validates the Xcode project references, extension plists, Swift
@@ -80,17 +82,18 @@ signatures. It also scans Swift sources for network, analytics, ad identifier,
 camera, microphone, location, webview APIs, and debug logging. `make lint`,
 `make test`, and `make build` run the same static baseline on machines without
 Xcode. When `xcodebuild` is installed, the baseline checks that Xcode can read
-`Twemoji.xcodeproj`.
+`Twemoji.xcodeproj`; `make xcode-build` performs an unsigned iPhone Simulator
+build of the host app and Messages extension.
 
 Bundled sticker validation parses every PNG chunk, verifies chunk boundaries
 and CRCs, requires a valid initial `IHDR`, positive dimensions, image data, and
 a terminal `IEND`, and rejects trailing bytes. This catches resource corruption
 before `MSSticker` silently skips an asset at runtime.
 
-GitHub Actions runs `make check` on a `macos-15` runner for pushes, pull
-requests, and manual dispatches. The hosted job pins checkout by commit, uses
-read-only repository permissions, and exercises the `xcodebuild -list` project
-parse that is unavailable on non-Apple development machines.
+GitHub Actions runs `make check` and `make xcode-build` on a `macos-15` runner
+for pushes, pull requests, and manual dispatches. The hosted job pins checkout
+by commit, uses read-only repository permissions, and performs the simulator
+build that is unavailable on non-Apple development machines.
 
 For full Apple-platform verification, open `Twemoji.xcodeproj` in Xcode and run
 the app/extension on an iOS simulator or device.
@@ -146,6 +149,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   and Xcode project-parse baseline.
 - See `docs/plans/2026-06-10-emoji-png-integrity.md` for complete bundled PNG
   structure and CRC validation.
+- See `docs/plans/2026-06-12-swift5-xcode-build-gate.md` for the Swift 5
+  migration and hosted simulator build contract.
 
 ## Contributing
 

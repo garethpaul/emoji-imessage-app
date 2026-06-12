@@ -53,7 +53,7 @@ resource lookups clear stale visible sticker data.
 
 GitHub Actions runs the maintenance baseline on a fixed macOS runner with
 pinned checkout, read-only repository permissions, a bounded runtime, and an
-Xcode project parse.
+unsigned iPhone Simulator build of the Swift 5 host app and extension.
 
 Every bundled sticker must remain a structurally complete PNG with valid chunk
 boundaries and CRCs, an initial `IHDR`, image data, positive dimensions, and a

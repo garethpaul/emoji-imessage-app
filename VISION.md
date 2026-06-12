@@ -26,6 +26,8 @@ Current baseline:
 
 - `scripts/check-baseline.sh` validates project metadata, extension plists,
   Swift source invariants, and Twemoji PNG signatures.
+- The project uses Swift 5 and current UIKit/Foundation child-controller and
+  bundle APIs with an Xcode 16-supported iOS 12 deployment target.
 - Sticker discovery uses deterministic sticker loading by sorted bundle
   filename and clears stale state before reloading.
 - Sticker discovery filters resources by case-insensitive PNG path extension.
@@ -45,8 +47,8 @@ Current baseline:
   camera, microphone, location, webview APIs, and debug logging.
 - Signing/provisioning files, Xcode user data, archives, and build outputs stay
   ignored and untracked.
-- GitHub Actions runs `make check` on a fixed macOS runner so the Xcode project
-  parse is covered before review.
+- GitHub Actions runs `make check` and an unsigned simulator build on a fixed
+  macOS runner so the Swift 5 host app and extension compile before review.
 - The maintenance gate parses every bundled sticker PNG and verifies complete
   chunk structure and CRC integrity before review.
 
@@ -55,7 +57,6 @@ Next priorities:
 - Document Xcode and iOS version expectations
 - Clarify emoji asset licensing and update process
 - Add manual verification notes for selecting and sending an emoji
-- Modernize Swift and project settings in a dedicated pass if needed
 
 Contribution rules:
 

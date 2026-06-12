@@ -21,9 +21,9 @@ class MessagesViewController: MSMessagesAppViewController {
         browserViewController.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         self.browserViewController = browserViewController
         
-        self.addChildViewController(browserViewController)
+        self.addChild(browserViewController)
         self.view.addSubview(browserViewController.view)
-        browserViewController.didMove(toParentViewController: self)
+        browserViewController.didMove(toParent: self)
         
         browserViewController.loadStickers()
         // Do any additional setup after loading the view.

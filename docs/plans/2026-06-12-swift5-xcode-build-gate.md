@@ -25,8 +25,9 @@ of preserving an unbuilt Swift 3 project indefinitely.
 - R1. All project configurations must use `SWIFT_VERSION = 5.0`.
 - R2. Swift sources must use current `Bundle.main`, `FileManager.default`,
   `addChild`, and `didMove(toParent:)` APIs without changing sticker behavior.
-- R3. The iOS 10 deployment target, bundle identifiers, resource references,
-  signing exclusions, and privacy guard must remain unchanged.
+- R3. The deployment target must move only as far as required by hosted Xcode;
+  bundle identifiers, resource references, signing exclusions, and the privacy
+  guard must remain unchanged.
 - R4. `make xcode-build` must compile the `Twemoji` target for the iPhone
   Simulator with code signing disabled when Xcode is available.
 - R5. GitHub Actions must run the static baseline and the new Xcode build on the
@@ -42,3 +43,9 @@ of preserving an unbuilt Swift 3 project indefinitely.
 - Mutation check: restoring `SWIFT_VERSION = 3.0` must fail the static baseline.
 - Hosted branch/PR verification must be green before merging to `master`.
 
+## Hosted Finding
+
+The first Xcode 16.4 build succeeded but reported that iOS 10 is outside its
+supported simulator deployment range of iOS 12 through 18.5. The implementation
+therefore raises the project minimum to iOS 12 instead of preserving an
+unsupported warning-producing target.

@@ -3,7 +3,7 @@
 ## 2026-06-12
 
 - Migrated the project compiler setting and extension source from Swift 3-era
-  API names to Swift 5 while preserving the iOS 10 deployment target.
+  API names to Swift 5 and raised the unsupported iOS 10 minimum to iOS 12.
 - Added `make xcode-build` for an unsigned iPhone Simulator build of the host
   app and Messages extension.
 - Extended macOS CI and the static baseline to reject project-parse-only or

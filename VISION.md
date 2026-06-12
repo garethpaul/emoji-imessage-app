@@ -27,7 +27,7 @@ Current baseline:
 - `scripts/check-baseline.sh` validates project metadata, extension plists,
   Swift source invariants, and Twemoji PNG signatures.
 - The project uses Swift 5 and current UIKit/Foundation child-controller and
-  bundle APIs while preserving the iOS 10 deployment target.
+  bundle APIs with an Xcode 16-supported iOS 12 deployment target.
 - Sticker discovery uses deterministic sticker loading by sorted bundle
   filename and clears stale state before reloading.
 - Sticker discovery filters resources by case-insensitive PNG path extension.

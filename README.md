@@ -6,8 +6,8 @@
 ## Overview
 
 `garethpaul/emoji-imessage-app` is a Swift iMessage extension that presents a
-bundled Twemoji image set as Messages stickers. It uses Swift 5 while preserving
-the original iOS 10 deployment target and has no network or analytics behavior
+bundled Twemoji image set as Messages stickers. It uses Swift 5 with an iOS 12
+deployment target and has no network or analytics behavior
 in the checked-in source.
 
 ## Repository Contents
@@ -44,8 +44,8 @@ git clone https://github.com/garethpaul/emoji-imessage-app.git
 cd emoji-imessage-app
 ```
 
-This project preserves the iOS 10 deployment baseline with Swift 5 source and
-current UIKit/Foundation API names.
+This project uses an iOS 12 deployment baseline with Swift 5 source and current
+UIKit/Foundation API names.
 
 ## Running or Using the Project
 

@@ -204,10 +204,11 @@ PY
 
 if [ "$(grep -Fc "SWIFT_VERSION = 5.0;" "$PROJECT")" -ne 4 ] ||
   grep -Fq "SWIFT_VERSION = 3.0;" "$PROJECT" ||
-  ! grep -Fq "IPHONEOS_DEPLOYMENT_TARGET = 10.0;" "$PROJECT" ||
+  [ "$(grep -Fc "IPHONEOS_DEPLOYMENT_TARGET = 12.0;" "$PROJECT")" -ne 2 ] ||
+  grep -Fq "IPHONEOS_DEPLOYMENT_TARGET = 10.0;" "$PROJECT" ||
   ! grep -Fq "MessagesViewController.swift in Sources" "$PROJECT" ||
   ! grep -Fq "TwemojiBrowserViewController.swift in Sources" "$PROJECT"; then
-  printf '%s\n' "Xcode project must preserve the Swift 5 / iOS 10 extension baseline." >&2
+  printf '%s\n' "Xcode project must preserve the Swift 5 / iOS 12 extension baseline." >&2
   exit 1
 fi
 

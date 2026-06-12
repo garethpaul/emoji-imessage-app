@@ -1,6 +1,6 @@
 # Emoji iMessage Swift 5 Build Gate
 
-## Status: In Progress
+## Status: Completed
 
 ## Goal
 
@@ -49,3 +49,31 @@ The first Xcode 16.4 build succeeded but reported that iOS 10 is outside its
 supported simulator deployment range of iOS 12 through 18.5. The implementation
 therefore raises the project minimum to iOS 12 instead of preserving an
 unsupported warning-producing target.
+
+The final Xcode 16.4 build also sets `ONLY_ACTIVE_ARCH=NO` and
+`DISABLE_MANUAL_TARGET_ORDER_BUILD_WARNING=YES`, removing command-line target
+selection warnings. Existing asset-catalog assignment, PNG bit-depth, and
+App Intents metadata warnings remain separate asset-maintenance work; they do
+not prevent the application and Messages extension from compiling.
+
+## Work Completed
+
+- Migrated all project configurations from Swift 3 to Swift 5.
+- Replaced renamed Foundation and UIKit APIs while preserving the existing
+  sticker-browser lifecycle and resource lookup behavior.
+- Raised the deployment target to the minimum supported by the hosted Xcode
+  16.4 simulator SDK: iOS 12.
+- Added an unsigned `Twemoji` simulator build to the pinned macOS CI job and
+  made command-line architecture and target-order behavior explicit.
+- Extended the static baseline and maintenance documentation to reject a
+  return to Swift 3 or parse-only CI.
+
+## Verification Completed
+
+- `make check` passes locally; Xcode parsing is skipped locally because this
+  Linux host does not provide `xcodebuild`.
+- `git diff --check` passes.
+- Restoring `SWIFT_VERSION = 3.0` makes `make check` fail as required.
+- GitHub Actions push run `27391356123` passed.
+- GitHub Actions pull-request run `27391356991` passed under Xcode 16.4 and
+  ended with `BUILD SUCCEEDED` for the iPhone Simulator target.

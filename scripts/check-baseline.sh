@@ -440,6 +440,13 @@ if ! grep -Fq "Status: Completed" "$PNG_INTEGRITY_PLAN" ||
   exit 1
 fi
 
+if ! grep -Fq "Status: Completed" "$SWIFT5_PLAN" ||
+  ! grep -Fq "Xcode 16.4" "$SWIFT5_PLAN" ||
+  ! grep -Fq "BUILD SUCCEEDED" "$SWIFT5_PLAN"; then
+  printf '%s\n' "Swift 5 build plan must remain completed with hosted Xcode verification recorded." >&2
+  exit 1
+fi
+
 for png_integrity_contract in \
   "zlib.crc32" \
   "truncated chunk header" \

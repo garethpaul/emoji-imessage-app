@@ -89,8 +89,9 @@ before `MSSticker` silently skips an asset at runtime.
 
 GitHub Actions runs `make check` on a `macos-15` runner for pushes, pull
 requests, and manual dispatches. The hosted job pins checkout by commit, uses
-read-only repository permissions, and exercises the `xcodebuild -list` project
-parse that is unavailable on non-Apple development machines.
+read-only repository permissions, does not persist checkout credentials, and
+exercises the `xcodebuild -list` project parse that is unavailable on non-Apple
+development machines.
 
 For full Apple-platform verification, open `Twemoji.xcodeproj` in Xcode and run
 the app/extension on an iOS simulator or device.

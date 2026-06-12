@@ -103,7 +103,9 @@ if ! grep -Fq "lint: check" "$ROOT_DIR/Makefile" ||
   ! grep -Fq "build: check" "$ROOT_DIR/Makefile" ||
   ! grep -Fq "xcode-build:" "$ROOT_DIR/Makefile" ||
   ! grep -Fq "Twemoji.xcodeproj -target Twemoji -sdk iphonesimulator" "$ROOT_DIR/Makefile" ||
-  ! grep -Fq "CODE_SIGNING_ALLOWED=NO" "$ROOT_DIR/Makefile"; then
+  ! grep -Fq "CODE_SIGNING_ALLOWED=NO" "$ROOT_DIR/Makefile" ||
+  ! grep -Fq "ONLY_ACTIVE_ARCH=NO" "$ROOT_DIR/Makefile" ||
+  ! grep -Fq "DISABLE_MANUAL_TARGET_ORDER_BUILD_WARNING=YES" "$ROOT_DIR/Makefile"; then
   printf '%s\n' "Makefile must expose lint, test, and build aliases for the baseline gate." >&2
   exit 1
 fi

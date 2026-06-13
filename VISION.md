@@ -42,6 +42,8 @@ Current baseline:
   resizes with the host view.
 - The sticker browser child controller is retained explicitly and follows the
   add-child, add-view, did-move lifecycle order.
+- The extension storyboard has no template label or placeholder subview behind
+  the programmatic sticker browser.
 - The checked-in Swift source has no network or analytics behavior.
 - Sticker loading avoids debug logging of bundle paths, asset names, and local
   errors.

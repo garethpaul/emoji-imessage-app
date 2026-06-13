@@ -93,6 +93,8 @@ before `MSSticker` silently skips an asset at runtime.
 Sticker accessibility descriptions decode each hyphen-separated hexadecimal
 asset stem into its Unicode emoji sequence. A future invalid stem falls back to
 the extensionless filename instead of dropping the sticker or crashing.
+The extension storyboard contains no template label or placeholder subview;
+the programmatic sticker browser is the sole content surface.
 
 GitHub Actions runs `make check` and `make xcode-build` on a `macos-15` runner
 for pushes, pull requests, and manual dispatches. The hosted job pins checkout
@@ -192,6 +194,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   Unicode sticker accessibility label boundary.
 - See `docs/plans/2026-06-13-emoji-manual-sticker-verification.md` for the
   Messages selection, send, and VoiceOver verification checklist.
+- See `docs/plans/2026-06-13-emoji-storyboard-placeholder-removal.md` for the
+  extension template-content boundary.
 
 ## Contributing
 

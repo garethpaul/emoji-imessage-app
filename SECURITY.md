@@ -61,6 +61,8 @@ terminal `IEND` without trailing bytes.
 
 Sticker accessibility labels decode only validated hexadecimal Unicode scalar
 stems and fall back to the extensionless asset name on future invalid input.
+The extension storyboard contains no template label behind the programmatic
+sticker browser and exposes no stale placeholder content to accessibility APIs.
 Manual Messages verification should confirm that VoiceOver announces both a
 single-scalar and multi-scalar sticker without exposing raw hexadecimal asset
 stems. Also confirm that opening, previewing, and sending a sticker causes no

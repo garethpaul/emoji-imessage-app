@@ -2,7 +2,7 @@
 title: Emoji Extension Storyboard Placeholder Removal
 type: accessibility
 date: 2026-06-13
-status: planned
+status: completed
 execution: code
 ---
 
@@ -42,3 +42,20 @@ accessibility-exposed content surface.
 - Changing sticker discovery, descriptions, layout, sizing, or send behavior.
 - Editing PNG assets, screenshots, signing configuration, or deployment target.
 - Claiming simulator/device Messages or VoiceOver verification from Linux.
+
+## Verification
+
+- The focused Python 3.12.8 XML contract passed and found exactly one
+  `MessagesViewController` root view with no storyboard subviews, template
+  constraints, or `Hello World` text.
+- `make check`, `make lint`, `make test`, and `make build` passed the full
+  portable baseline, including project, plist, Swift, privacy, signing, and all
+  834 PNG integrity contracts.
+- Eight isolated hostile mutations were rejected across restored labels,
+  placeholder text, stale constraints, root-view/controller identity, docs,
+  and completed plan evidence.
+- Shell syntax, XML parsing, git diff, exact-path, signing/secret-like addition,
+  and generated-artifact inspections passed; Swift, assets, project settings,
+  plists, workflow, and signing exclusions were unchanged.
+- Xcode, simulator/device Messages interaction, and VoiceOver were not performed locally.
+  The stacked pull request's hosted macOS build remains required.

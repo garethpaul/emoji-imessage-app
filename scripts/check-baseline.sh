@@ -8,6 +8,7 @@ AGENTS="$ROOT_DIR/AGENTS.md"
 PROJECT="$ROOT_DIR/Twemoji.xcodeproj/project.pbxproj"
 MESSAGES_VIEW="$ROOT_DIR/MessagesExtension/MessagesViewController.swift"
 BROWSER_VIEW="$ROOT_DIR/MessagesExtension/TwemojiBrowserViewController.swift"
+STORYBOARD="$ROOT_DIR/MessagesExtension/Base.lproj/MainInterface.storyboard"
 PLAN="$ROOT_DIR/docs/plans/2026-06-08-emoji-imessage-app-maintenance-baseline.md"
 RELOAD_PLAN="$ROOT_DIR/docs/plans/2026-06-08-emoji-imessage-sticker-reload.md"
 LIFECYCLE_PLAN="$ROOT_DIR/docs/plans/2026-06-09-emoji-imessage-child-lifecycle.md"
@@ -23,6 +24,7 @@ PNG_INTEGRITY_PLAN="$ROOT_DIR/docs/plans/2026-06-10-emoji-png-integrity.md"
 SWIFT5_PLAN="$ROOT_DIR/docs/plans/2026-06-12-swift5-xcode-build-gate.md"
 ACCESSIBLE_DESCRIPTION_PLAN="$ROOT_DIR/docs/plans/2026-06-13-emoji-accessible-sticker-descriptions.md"
 MANUAL_VERIFICATION_PLAN="$ROOT_DIR/docs/plans/2026-06-13-emoji-manual-sticker-verification.md"
+STORYBOARD_PLACEHOLDER_PLAN="$ROOT_DIR/docs/plans/2026-06-13-emoji-storyboard-placeholder-removal.md"
 CI_WORKFLOW="$ROOT_DIR/.github/workflows/check.yml"
 
 require_file() {
@@ -61,10 +63,52 @@ for path in \
   "docs/plans/2026-06-12-swift5-xcode-build-gate.md" \
   "docs/plans/2026-06-13-emoji-accessible-sticker-descriptions.md" \
   "docs/plans/2026-06-13-emoji-manual-sticker-verification.md" \
+  "docs/plans/2026-06-13-emoji-storyboard-placeholder-removal.md" \
   "docs/plans/2026-06-08-emoji-imessage-sticker-reload.md" \
   "docs/plans/2026-06-08-emoji-imessage-app-maintenance-baseline.md"; do
   require_file "$path"
 done
+
+python3 - "$STORYBOARD" <<'PY'
+import sys
+import xml.etree.ElementTree as ET
+
+path = sys.argv[1]
+root = ET.parse(path).getroot()
+controllers = [
+    controller
+    for controller in root.iter("viewController")
+    if controller.get("customClass") == "MessagesViewController"
+]
+if len(controllers) != 1:
+    raise SystemExit("Storyboard must contain exactly one MessagesViewController scene.")
+
+view = controllers[0].find("view")
+if view is None:
+    raise SystemExit("MessagesViewController must retain its root view.")
+if list(view.findall("./subviews/*")):
+    raise SystemExit("Messages extension storyboard must not retain template subviews.")
+if list(view.findall("./constraints/constraint")):
+    raise SystemExit("Messages extension storyboard must not retain template constraints.")
+if any(element.get("text") == "Hello World" for element in root.iter()):
+    raise SystemExit("Messages extension storyboard must not retain placeholder text.")
+PY
+
+if ! grep -Fq "status: completed" "$STORYBOARD_PLACEHOLDER_PLAN" ||
+  ! grep -Fq "hostile mutations were rejected" "$STORYBOARD_PLACEHOLDER_PLAN" ||
+  ! grep -Fq "not performed locally" "$STORYBOARD_PLACEHOLDER_PLAN" ||
+  ! grep -Fq "hosted macOS build" "$STORYBOARD_PLACEHOLDER_PLAN"; then
+  printf '%s\n' "Storyboard placeholder-removal plan must record truthful completed evidence." >&2
+  exit 1
+fi
+
+if ! grep -Fq "no template label or placeholder subview" "$README" ||
+  ! grep -Fq "no template label behind" "$ROOT_DIR/SECURITY.md" ||
+  ! grep -Fq "no template label or placeholder subview" "$VISION" ||
+  ! grep -Fq "storyboard's template label and constraints" "$ROOT_DIR/CHANGES.md"; then
+  printf '%s\n' "Project docs must preserve the extension storyboard placeholder boundary." >&2
+  exit 1
+fi
 
 if ! grep -Fq "make check" "$README" ||
   ! grep -Fq "Twemoji image set" "$README" ||

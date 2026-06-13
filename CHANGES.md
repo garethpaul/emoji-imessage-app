@@ -2,6 +2,8 @@
 
 ## 2026-06-13
 
+- Removed the Messages extension storyboard's template label and constraints so
+  the programmatic sticker browser is the sole content surface.
 - Added a version-recorded manual Messages checklist for sticker selection,
   preview, send, transcript, VoiceOver, privacy, logging, and failure evidence.
 - Distinguished static and unsigned-build success from completed Messages-host

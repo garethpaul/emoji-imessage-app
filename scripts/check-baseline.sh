@@ -22,6 +22,7 @@ CI_PLAN="$ROOT_DIR/docs/plans/2026-06-10-emoji-imessage-ci-baseline.md"
 PNG_INTEGRITY_PLAN="$ROOT_DIR/docs/plans/2026-06-10-emoji-png-integrity.md"
 SWIFT5_PLAN="$ROOT_DIR/docs/plans/2026-06-12-swift5-xcode-build-gate.md"
 ACCESSIBLE_DESCRIPTION_PLAN="$ROOT_DIR/docs/plans/2026-06-13-emoji-accessible-sticker-descriptions.md"
+MANUAL_VERIFICATION_PLAN="$ROOT_DIR/docs/plans/2026-06-13-emoji-manual-sticker-verification.md"
 CI_WORKFLOW="$ROOT_DIR/.github/workflows/check.yml"
 
 require_file() {
@@ -59,6 +60,7 @@ for path in \
   "docs/plans/2026-06-10-emoji-png-integrity.md" \
   "docs/plans/2026-06-12-swift5-xcode-build-gate.md" \
   "docs/plans/2026-06-13-emoji-accessible-sticker-descriptions.md" \
+  "docs/plans/2026-06-13-emoji-manual-sticker-verification.md" \
   "docs/plans/2026-06-08-emoji-imessage-sticker-reload.md" \
   "docs/plans/2026-06-08-emoji-imessage-app-maintenance-baseline.md"; do
   require_file "$path"
@@ -330,6 +332,60 @@ for document in "$README" "$ROOT_DIR/SECURITY.md" "$VISION" "$ROOT_DIR/CHANGES.m
     exit 1
   fi
 done
+
+python3 - "$README" <<'PY'
+from pathlib import Path
+import sys
+
+readme = Path(sys.argv[1]).read_text(encoding="utf-8")
+heading = "### Manual Messages Verification"
+try:
+    section = readme.split(heading, 1)[1].split("\n## ", 1)[0]
+except IndexError:
+    raise SystemExit("README must contain one Manual Messages Verification section.")
+
+contracts = (
+    "make check",
+    "make xcode-build",
+    "Xcode 16.4",
+    "run the `MessagesExtension` scheme",
+    "app drawer",
+    "Messages input field",
+    "Messages send control",
+    "conversation transcript",
+    "drag it onto an",
+    "single-scalar sticker",
+    "multi-scalar",
+    "raw hexadecimal asset stem",
+    "a sticker was missing",
+    "unexpected permission/network behavior",
+    "manual verification complete unless",
+)
+for contract in contracts:
+    if contract not in section:
+        raise SystemExit(f"Manual Messages verification contract is missing: {contract}")
+PY
+
+if ! grep -Fq "static and unsigned-build success" "$ROOT_DIR/CHANGES.md" ||
+  ! grep -Fq "Manual Messages verification is documented separately" "$VISION" ||
+  ! grep -Fq "do not prove Messages-host interaction" "$AGENTS" ||
+  ! grep -Fq "Static checks and an unsigned simulator build do not prove" "$ROOT_DIR/SECURITY.md"; then
+  printf '%s\n' "Project guidance must separate build evidence from Messages-host verification." >&2
+  exit 1
+fi
+
+if grep -Fq "Add manual verification notes for selecting and sending an emoji" "$VISION"; then
+  printf '%s\n' "VISION must move completed manual sticker guidance out of next priorities." >&2
+  exit 1
+fi
+
+if ! grep -Fq "status: completed" "$MANUAL_VERIFICATION_PLAN" ||
+  ! grep -Fq "hostile mutations were rejected" "$MANUAL_VERIFICATION_PLAN" ||
+  ! grep -Fq "not performed locally" "$MANUAL_VERIFICATION_PLAN" ||
+  ! grep -Fq "hosted macOS build" "$MANUAL_VERIFICATION_PLAN"; then
+  printf '%s\n' "Manual sticker verification plan must record truthful completed evidence." >&2
+  exit 1
+fi
 
 if ! grep -Fq "private func isPNGResource" "$BROWSER_VIEW" ||
   ! grep -Fq 'pathExtension.lowercased() == "png"' "$BROWSER_VIEW" ||

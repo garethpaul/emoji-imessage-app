@@ -61,6 +61,12 @@ terminal `IEND` without trailing bytes.
 
 Sticker accessibility labels decode only validated hexadecimal Unicode scalar
 stems and fall back to the extensionless asset name on future invalid input.
+Manual Messages verification should confirm that VoiceOver announces both a
+single-scalar and multi-scalar sticker without exposing raw hexadecimal asset
+stems. Also confirm that opening, previewing, and sending a sticker causes no
+unexpected permission prompt, network activity, or private path/error logging.
+Static checks and an unsigned simulator build do not prove this runtime privacy
+boundary; record the exact Xcode and iOS runtime used for the manual check.
 
 ## Dependency and Supply Chain Security
 

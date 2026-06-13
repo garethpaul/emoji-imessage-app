@@ -2,7 +2,7 @@
 title: Emoji iMessage Manual Sticker Verification
 type: documentation
 date: 2026-06-13
-status: planned
+status: completed
 ---
 
 # Emoji iMessage Manual Sticker Verification
@@ -56,15 +56,19 @@ must clearly separate required steps from locally unperformed platform results.
   described as completed simulator interaction.
 - **Covers:** R7
 
-## Verification Plan
+## Verification
 
-- Run `make check`, `make lint`, `make test`, and `make build` on Linux.
-- Apply isolated mutations for removed select/send, accessibility, failure,
-  prerequisite, platform-limitation, roadmap, and plan-evidence guidance.
-- Inspect exact paths, signing/secret-like additions, generated artifacts, and
-  staged files before committing.
-- Do not claim local Xcode, simulator, Messages, VoiceOver, or device execution;
-  require the hosted macOS build before completing exact-head evidence.
+- `make check`, `make lint`, `make test`, and `make build` passed the portable
+  maintenance baseline on Linux.
+- Eight isolated hostile mutations were rejected for removed select/send,
+  accessibility, failure, prerequisite, platform-limitation, roadmap, and
+  completed-plan evidence.
+- Shell syntax, `git diff --check`, exact-path review, signing/secret-like
+  addition inspection, generated-artifact inspection, and staged-path review
+  passed.
+- Xcode, simulator/device Messages interaction, sticker selection/send, and
+  VoiceOver were not performed locally. The hosted macOS build remains required
+  on the exact implementation head before tracker completion.
 
 ## Risks
 

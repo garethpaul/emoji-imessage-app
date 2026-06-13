@@ -45,7 +45,8 @@ cd emoji-imessage-app
 ```
 
 This project uses an iOS 12 deployment baseline with Swift 5 source and current
-UIKit/Foundation API names.
+UIKit/Foundation API names. The reviewed hosted build uses Xcode 16.4; record
+the exact Xcode and iOS runtime when performing manual verification.
 
 ## Running or Using the Project
 
@@ -102,6 +103,38 @@ machines.
 For full Apple-platform verification, open `Twemoji.xcodeproj` in Xcode and run
 the app/extension on an iOS simulator or device.
 
+### Manual Messages Verification
+
+The maintained baseline is Swift 5 with an iOS 12 minimum and a reviewed
+Xcode 16.4 hosted build; record the exact runtime used because that build does not
+establish behavior on every supported iOS version.
+
+Complete `make check` and `make xcode-build` before testing the user-visible
+flow. Those commands prove repository invariants and compilation, not Messages
+host interaction.
+
+1. Record the Xcode version, iOS simulator or device version, and device model.
+2. Select and run the `MessagesExtension` scheme. When Messages opens, enter a
+   test conversation, open the app drawer, and select the Twemoji extension.
+3. Confirm the sticker browser is populated, scroll it, and reopen the extension
+   to confirm stale or duplicated stickers do not appear.
+4. Tap one bundled sticker and confirm it appears in the Messages input field.
+   Use the Messages send control and confirm the same sticker appears in the
+   conversation transcript. Also press and hold a sticker and drag it onto an
+   existing message balloon to verify the standard sticker attachment path.
+5. With VoiceOver enabled, focus one single-scalar sticker and one multi-scalar
+   sticker such as a keycap. Confirm each accessible description announces the
+   emoji rather than a raw hexadecimal asset stem.
+6. Confirm the extension requests no permissions, performs no network activity,
+   and prints no bundle paths, asset names, or local errors to the console.
+
+Record failures with the exact toolchain/runtime and whether the browser was
+empty, a sticker was missing, preview or send failed, stale content remained,
+the extension crashed, a raw asset stem was announced, private path/error data
+was logged, or unexpected permission/network behavior occurred. Do not mark
+manual verification complete unless the selection, preview, send, transcript,
+and accessibility checks were actually exercised.
+
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 
 ## Configuration and Secrets
@@ -157,6 +190,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   migration and hosted simulator build contract.
 - See `docs/plans/2026-06-13-emoji-accessible-sticker-descriptions.md` for the
   Unicode sticker accessibility label boundary.
+- See `docs/plans/2026-06-13-emoji-manual-sticker-verification.md` for the
+  Messages selection, send, and VoiceOver verification checklist.
 
 ## Contributing
 

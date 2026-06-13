@@ -2,6 +2,10 @@
 
 ## 2026-06-13
 
+- Added a version-recorded manual Messages checklist for sticker selection,
+  preview, send, transcript, VoiceOver, privacy, logging, and failure evidence.
+- Distinguished static and unsigned-build success from completed Messages-host
+  interaction.
 - Decode bundled Twemoji filename scalars into Unicode sticker accessibility
   descriptions instead of exposing hexadecimal asset identifiers.
 - Validate all 834 asset stems and preserve a fail-closed filename fallback.

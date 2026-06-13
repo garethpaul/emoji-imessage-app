@@ -53,12 +53,13 @@ Current baseline:
   macOS runner so the Swift 5 host app and extension compile before review.
 - The maintenance gate parses every bundled sticker PNG and verifies complete
   chunk structure and CRC integrity before review.
+- Manual Messages verification is documented separately from static/build
+  evidence and covers sticker selection, preview, send, transcript appearance,
+  VoiceOver descriptions, stale content, logging, permissions, and networking.
 
 Next priorities:
 
-- Document Xcode and iOS version expectations
 - Clarify emoji asset licensing and update process
-- Add manual verification notes for selecting and sending an emoji
 
 Contribution rules:
 

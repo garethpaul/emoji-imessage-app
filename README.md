@@ -89,6 +89,9 @@ Bundled sticker validation parses every PNG chunk, verifies chunk boundaries
 and CRCs, requires a valid initial `IHDR`, positive dimensions, image data, and
 a terminal `IEND`, and rejects trailing bytes. This catches resource corruption
 before `MSSticker` silently skips an asset at runtime.
+Sticker accessibility descriptions decode each hyphen-separated hexadecimal
+asset stem into its Unicode emoji sequence. A future invalid stem falls back to
+the extensionless filename instead of dropping the sticker or crashing.
 
 GitHub Actions runs `make check` and `make xcode-build` on a `macos-15` runner
 for pushes, pull requests, and manual dispatches. The hosted job pins checkout
@@ -152,6 +155,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   structure and CRC validation.
 - See `docs/plans/2026-06-12-swift5-xcode-build-gate.md` for the Swift 5
   migration and hosted simulator build contract.
+- See `docs/plans/2026-06-13-emoji-accessible-sticker-descriptions.md` for the
+  Unicode sticker accessibility label boundary.
 
 ## Contributing
 

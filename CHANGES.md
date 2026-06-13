@@ -1,5 +1,11 @@
 # Changes
 
+## 2026-06-13
+
+- Decode bundled Twemoji filename scalars into Unicode sticker accessibility
+  descriptions instead of exposing hexadecimal asset identifiers.
+- Validate all 834 asset stems and preserve a fail-closed filename fallback.
+
 ## 2026-06-12
 
 - Migrated the project compiler setting and extension source from Swift 3-era

@@ -59,6 +59,9 @@ Every bundled sticker must remain a structurally complete PNG with valid chunk
 boundaries and CRCs, an initial `IHDR`, image data, positive dimensions, and a
 terminal `IEND` without trailing bytes.
 
+Sticker accessibility labels decode only validated hexadecimal Unicode scalar
+stems and fall back to the extensionless asset name on future invalid input.
+
 ## Dependency and Supply Chain Security
 
 Dependency updates should come from trusted package managers and should keep lockfiles in sync when lockfiles exist. Do not commit credentials, private keys, tokens, generated secrets, or machine-local configuration. If a vulnerability depends on a compromised package, typosquatting risk, insecure transitive dependency, or unsafe build step, include the package name, affected version, and the path through which it is used.

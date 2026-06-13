@@ -21,6 +21,7 @@ LOAD_RELOAD_PLAN="$ROOT_DIR/docs/plans/2026-06-09-emoji-imessage-load-reload-own
 CI_PLAN="$ROOT_DIR/docs/plans/2026-06-10-emoji-imessage-ci-baseline.md"
 PNG_INTEGRITY_PLAN="$ROOT_DIR/docs/plans/2026-06-10-emoji-png-integrity.md"
 SWIFT5_PLAN="$ROOT_DIR/docs/plans/2026-06-12-swift5-xcode-build-gate.md"
+ACCESSIBLE_DESCRIPTION_PLAN="$ROOT_DIR/docs/plans/2026-06-13-emoji-accessible-sticker-descriptions.md"
 CI_WORKFLOW="$ROOT_DIR/.github/workflows/check.yml"
 
 require_file() {
@@ -57,6 +58,7 @@ for path in \
   "docs/plans/2026-06-10-emoji-imessage-ci-baseline.md" \
   "docs/plans/2026-06-10-emoji-png-integrity.md" \
   "docs/plans/2026-06-12-swift5-xcode-build-gate.md" \
+  "docs/plans/2026-06-13-emoji-accessible-sticker-descriptions.md" \
   "docs/plans/2026-06-08-emoji-imessage-sticker-reload.md" \
   "docs/plans/2026-06-08-emoji-imessage-app-maintenance-baseline.md"; do
   require_file "$path"
@@ -274,6 +276,60 @@ if ! grep -Fq "(file as NSString).deletingPathExtension" "$BROWSER_VIEW" ||
   printf '%s\n' "Sticker loading must derive asset names by stripping only the path extension." >&2
   exit 1
 fi
+
+for description_contract in \
+  "private func localizedDescription(for file: String) -> String" \
+  'assetName.split(separator: "-", omittingEmptySubsequences: false)' \
+  'UInt32(String(component), radix: 16)' \
+  "UnicodeScalar(value)" \
+  "description.unicodeScalars.append(scalar)" \
+  "return assetName" \
+  "let stickerDescription = localizedDescription(for: file)" \
+  "localizedDescription: stickerDescription" \
+  "localizedDescription(for: file)"; do
+  if ! grep -Fq "$description_contract" "$BROWSER_VIEW"; then
+    printf '%s\n' "Sticker Unicode description contract is missing: $description_contract" >&2
+    exit 1
+  fi
+done
+
+python3 - "$ROOT_DIR/MessagesExtension" <<'PY'
+import pathlib
+import sys
+
+root = pathlib.Path(sys.argv[1])
+pngs = sorted(root.glob("*.png"))
+if len(pngs) != 834:
+    raise SystemExit(f"Expected 834 bundled sticker PNGs, found {len(pngs)}")
+
+for path in pngs:
+    components = path.stem.split("-")
+    if not components or any(not component for component in components):
+        raise SystemExit(f"Sticker stem has an empty Unicode component: {path.name}")
+    for component in components:
+        try:
+            value = int(component, 16)
+        except ValueError as exc:
+            raise SystemExit(f"Sticker stem is not hexadecimal: {path.name}") from exc
+        if value > 0x10FFFF or 0xD800 <= value <= 0xDFFF:
+            raise SystemExit(f"Sticker stem is not a Unicode scalar sequence: {path.name}")
+PY
+
+if ! grep -Fq "status: completed" "$ACCESSIBLE_DESCRIPTION_PLAN" ||
+  ! grep -Fq "All 834 PNG stems decoded" "$ACCESSIBLE_DESCRIPTION_PLAN" ||
+  ! grep -Fq "raw asset stem failed" "$ACCESSIBLE_DESCRIPTION_PLAN" ||
+  ! grep -Fq "filename fallback failed" "$ACCESSIBLE_DESCRIPTION_PLAN" ||
+  ! grep -Fq "hosted macOS build" "$ACCESSIBLE_DESCRIPTION_PLAN"; then
+  printf '%s\n' "Accessible sticker description plan must record completed local verification." >&2
+  exit 1
+fi
+
+for document in "$README" "$ROOT_DIR/SECURITY.md" "$VISION" "$ROOT_DIR/CHANGES.md"; do
+  if ! grep -Fq "accessibility" "$document"; then
+    printf '%s\n' "$document must document Unicode sticker accessibility descriptions." >&2
+    exit 1
+  fi
+done
 
 if ! grep -Fq "private func isPNGResource" "$BROWSER_VIEW" ||
   ! grep -Fq 'pathExtension.lowercased() == "png"' "$BROWSER_VIEW" ||

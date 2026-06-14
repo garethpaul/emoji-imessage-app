@@ -1,5 +1,10 @@
 # Changes
 
+## 2026-06-14
+
+- Made the portable checker and Xcode project targets resolve paths from the
+  Makefile location so they work from external working directories.
+
 ## 2026-06-13
 
 - Removed the Messages extension storyboard's template label and constraints so

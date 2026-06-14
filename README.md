@@ -86,6 +86,9 @@ Xcode. When `xcodebuild` is installed, the baseline checks that Xcode can read
 `Twemoji.xcodeproj`; `make xcode-build` performs an unsigned iPhone Simulator
 build of the host app and Messages extension.
 
+All Make targets resolve repository files from the Makefile location, so the
+same commands also work when the Makefile is invoked from another directory.
+
 Bundled sticker validation parses every PNG chunk, verifies chunk boundaries
 and CRCs, requires a valid initial `IHDR`, positive dimensions, image data, and
 a terminal `IEND`, and rejects trailing bytes. This catches resource corruption

@@ -18,6 +18,8 @@
 
 - Install dependencies: no repository-specific install command is documented.
 - Full baseline: `make check`
+- Make targets resolve repository paths from the Makefile location and must
+  remain callable from an external working directory.
 - Lint/static checks: `make lint`
 - Tests: `make test`
 - Build: `make build`

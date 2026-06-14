@@ -25,6 +25,7 @@ SWIFT5_PLAN="$ROOT_DIR/docs/plans/2026-06-12-swift5-xcode-build-gate.md"
 ACCESSIBLE_DESCRIPTION_PLAN="$ROOT_DIR/docs/plans/2026-06-13-emoji-accessible-sticker-descriptions.md"
 MANUAL_VERIFICATION_PLAN="$ROOT_DIR/docs/plans/2026-06-13-emoji-manual-sticker-verification.md"
 STORYBOARD_PLACEHOLDER_PLAN="$ROOT_DIR/docs/plans/2026-06-13-emoji-storyboard-placeholder-removal.md"
+LOCATION_INDEPENDENT_MAKE_PLAN="$ROOT_DIR/docs/plans/2026-06-14-emoji-location-independent-make.md"
 CI_WORKFLOW="$ROOT_DIR/.github/workflows/check.yml"
 
 require_file() {
@@ -64,6 +65,7 @@ for path in \
   "docs/plans/2026-06-13-emoji-accessible-sticker-descriptions.md" \
   "docs/plans/2026-06-13-emoji-manual-sticker-verification.md" \
   "docs/plans/2026-06-13-emoji-storyboard-placeholder-removal.md" \
+  "docs/plans/2026-06-14-emoji-location-independent-make.md" \
   "docs/plans/2026-06-08-emoji-imessage-sticker-reload.md" \
   "docs/plans/2026-06-08-emoji-imessage-app-maintenance-baseline.md"; do
   require_file "$path"
@@ -246,15 +248,35 @@ if ! grep -Fq "Signing certificates" "$ROOT_DIR/SECURITY.md" ||
   exit 1
 fi
 
-if ! grep -Fq "lint: check" "$ROOT_DIR/Makefile" ||
+if ! grep -Fq 'override ROOT := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))' "$ROOT_DIR/Makefile" ||
+  ! grep -Fq '"$(ROOT)scripts/check-baseline.sh"' "$ROOT_DIR/Makefile" ||
+  [ "$(grep -Fc '"$(ROOT)Twemoji.xcodeproj"' "$ROOT_DIR/Makefile")" -ne 2 ] ||
+  grep -Fq '@scripts/check-baseline.sh' "$ROOT_DIR/Makefile" ||
+  grep -Fq -- '-project Twemoji.xcodeproj' "$ROOT_DIR/Makefile" ||
+  ! grep -Fq "lint: check" "$ROOT_DIR/Makefile" ||
   ! grep -Fq "test: check" "$ROOT_DIR/Makefile" ||
   ! grep -Fq "build: check" "$ROOT_DIR/Makefile" ||
   ! grep -Fq "xcode-build:" "$ROOT_DIR/Makefile" ||
-  ! grep -Fq "Twemoji.xcodeproj -target Twemoji -sdk iphonesimulator" "$ROOT_DIR/Makefile" ||
+  ! grep -Fq '"$(ROOT)Twemoji.xcodeproj" -target Twemoji -sdk iphonesimulator' "$ROOT_DIR/Makefile" ||
   ! grep -Fq "CODE_SIGNING_ALLOWED=NO" "$ROOT_DIR/Makefile" ||
   ! grep -Fq "ONLY_ACTIVE_ARCH=NO" "$ROOT_DIR/Makefile" ||
   ! grep -Fq "DISABLE_MANUAL_TARGET_ORDER_BUILD_WARNING=YES" "$ROOT_DIR/Makefile"; then
   printf '%s\n' "Makefile must expose lint, test, and build aliases for the baseline gate." >&2
+  exit 1
+fi
+
+if ! grep -Fq "status: completed" "$LOCATION_INDEPENDENT_MAKE_PLAN" ||
+  ! grep -Fq "external working directory" "$LOCATION_INDEPENDENT_MAKE_PLAN" ||
+  ! grep -Fq "hostile mutations" "$LOCATION_INDEPENDENT_MAKE_PLAN" ||
+  ! grep -Fq "xcodebuild is not installed" "$LOCATION_INDEPENDENT_MAKE_PLAN"; then
+  printf '%s\n' "Location-independent Make plan must record truthful completed verification." >&2
+  exit 1
+fi
+
+if ! grep -Fq "Makefile location" "$README" ||
+  ! grep -Fq "Makefile location" "$AGENTS" ||
+  ! grep -Fq "Makefile location" "$ROOT_DIR/CHANGES.md"; then
+  printf '%s\n' "Project guidance must document location-independent Make paths." >&2
   exit 1
 fi
 

@@ -26,6 +26,8 @@ ACCESSIBLE_DESCRIPTION_PLAN="$ROOT_DIR/docs/plans/2026-06-13-emoji-accessible-st
 MANUAL_VERIFICATION_PLAN="$ROOT_DIR/docs/plans/2026-06-13-emoji-manual-sticker-verification.md"
 STORYBOARD_PLACEHOLDER_PLAN="$ROOT_DIR/docs/plans/2026-06-13-emoji-storyboard-placeholder-removal.md"
 LOCATION_INDEPENDENT_MAKE_PLAN="$ROOT_DIR/docs/plans/2026-06-14-emoji-location-independent-make.md"
+TWEMOJI_ATTRIBUTION_PLAN="$ROOT_DIR/docs/plans/2026-06-15-twemoji-graphics-attribution.md"
+THIRD_PARTY_NOTICES="$ROOT_DIR/THIRD_PARTY_NOTICES.md"
 CI_WORKFLOW="$ROOT_DIR/.github/workflows/check.yml"
 
 require_file() {
@@ -42,6 +44,7 @@ for path in \
   "Makefile" \
   "README.md" \
   "SECURITY.md" \
+  "THIRD_PARTY_NOTICES.md" \
   "VISION.md" \
   ".github/workflows/check.yml" \
   "Twemoji.xcodeproj/project.pbxproj" \
@@ -66,9 +69,50 @@ for path in \
   "docs/plans/2026-06-13-emoji-manual-sticker-verification.md" \
   "docs/plans/2026-06-13-emoji-storyboard-placeholder-removal.md" \
   "docs/plans/2026-06-14-emoji-location-independent-make.md" \
+  "docs/plans/2026-06-15-twemoji-graphics-attribution.md" \
   "docs/plans/2026-06-08-emoji-imessage-sticker-reload.md" \
   "docs/plans/2026-06-08-emoji-imessage-app-maintenance-baseline.md"; do
   require_file "$path"
+done
+
+png_count=$(find "$ROOT_DIR/MessagesExtension" -maxdepth 1 -type f -iname "*.png" | wc -l | tr -d ' ')
+if [ "$png_count" -ne 834 ]; then
+  printf '%s\n' "Bundled Twemoji inventory changed from 834 PNGs; document the source revision and update attribution evidence." >&2
+  exit 1
+fi
+
+for attribution_contract in \
+  "The 834 PNG sticker graphics" \
+  "https://github.com/twitter/twemoji" \
+  "Creative Commons Attribution 4.0 International license" \
+  "https://creativecommons.org/licenses/by/4.0/" \
+  "Copyright Twitter, Inc. and other contributors." \
+  "exact upstream tag or commit" \
+  'The root `LICENSE` remains unchanged by this notice.'; do
+  if ! grep -Fq "$attribution_contract" "$THIRD_PARTY_NOTICES"; then
+    printf '%s\n' "Twemoji third-party notice is missing: $attribution_contract" >&2
+    exit 1
+  fi
+done
+
+for attribution_doc in AGENTS.md README.md SECURITY.md VISION.md CHANGES.md; do
+  if ! grep -Fq "Bundled Twemoji graphics are attributed in THIRD_PARTY_NOTICES.md under CC BY 4.0." "$ROOT_DIR/$attribution_doc"; then
+    printf '%s\n' "Twemoji attribution guidance is missing from $attribution_doc" >&2
+    exit 1
+  fi
+done
+
+for attribution_plan_contract in \
+  "status: completed" \
+  "## Work Completed" \
+  "## Verification Completed" \
+  "Nine isolated hostile mutations were rejected" \
+  "Root and external-directory" \
+  "No PNG, Xcode project, storyboard, Swift source"; do
+  if ! grep -Fq "$attribution_plan_contract" "$TWEMOJI_ATTRIBUTION_PLAN"; then
+    printf '%s\n' "Twemoji attribution plan must record completed evidence: $attribution_plan_contract" >&2
+    exit 1
+  fi
 done
 
 python3 - "$STORYBOARD" <<'PY'

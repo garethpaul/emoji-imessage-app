@@ -1,5 +1,11 @@
 # Changes
 
+## 2026-06-15
+
+- Bundled Twemoji graphics are attributed in THIRD_PARTY_NOTICES.md under CC BY 4.0.
+- Added a static 834-PNG inventory and attribution-retention boundary for future
+  asset refreshes.
+
 ## 2026-06-14
 
 - Made the portable checker and Xcode project targets resolve paths from the

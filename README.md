@@ -28,6 +28,12 @@ Additional project context:
 - Entry points or build surfaces: Twemoji.xcodeproj, Makefile
 - Test-looking files: no obvious test files detected
 
+## Third-Party Assets
+
+Bundled Twemoji graphics are attributed in THIRD_PARTY_NOTICES.md under CC BY 4.0.
+The original upstream tag or commit is not recorded, so future asset refreshes
+must document their exact source revision before replacing the current corpus.
+
 ## Getting Started
 
 ### Prerequisites

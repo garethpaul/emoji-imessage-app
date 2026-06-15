@@ -46,6 +46,9 @@
 
 ## Safety and gotchas
 
+- Bundled Twemoji graphics are attributed in THIRD_PARTY_NOTICES.md under CC BY 4.0.
+- Preserve the notice and document the exact upstream tag or commit before any
+  asset refresh; the current historical import does not record one.
 - No required secret or credential file is used by this extension.
 - Do not commit signing certificates, provisioning profiles, Xcode user data, build products, or private assets.
 - `.gitignore` and `scripts/check-baseline.sh` guard common signing artifacts such as `.mobileprovision`, `.provisionprofile`, `.p12`, `.cer`, and `.xcarchive` files.

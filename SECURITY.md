@@ -31,6 +31,9 @@ Helpful reports include:
 
 ## Mobile Privacy Notes
 
+Bundled Twemoji graphics are attributed in THIRD_PARTY_NOTICES.md under CC BY 4.0.
+Asset updates must retain the notice and record their exact upstream revision.
+
 If this project requests device permissions such as location, camera, microphone, contacts, Bluetooth, health data, or local storage access, reports should describe the permission involved and whether sensitive data can be accessed, persisted, or transmitted unexpectedly. Please avoid testing against real third-party user data or accounts you do not control.
 
 Sticker asset names should be derived from bundled PNG path extensions rather

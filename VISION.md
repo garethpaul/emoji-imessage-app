@@ -24,6 +24,9 @@ Priority:
 
 Current baseline:
 
+- Bundled Twemoji graphics are attributed in THIRD_PARTY_NOTICES.md under CC BY 4.0.
+- The current 834-PNG historical import has no recorded upstream revision;
+  future refreshes must record an exact tag or commit.
 - `scripts/check-baseline.sh` validates project metadata, extension plists,
   Swift source invariants, and Twemoji PNG signatures.
 - The project uses Swift 5 and current UIKit/Foundation child-controller and
@@ -61,7 +64,7 @@ Current baseline:
 
 Next priorities:
 
-- Clarify emoji asset licensing and update process
+- Record the exact upstream revision during the next reviewed asset refresh
 
 Contribution rules:
 

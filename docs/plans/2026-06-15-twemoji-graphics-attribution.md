@@ -1,7 +1,7 @@
 ---
 title: Twemoji Graphics Attribution
 type: compliance
-status: in_progress
+status: completed
 date: 2026-06-15
 ---
 
@@ -50,3 +50,29 @@ README or application About/legal mention for attribution.
   Xcode-project drift.
 - Retain Xcode/Messages runtime verification as not applicable to this
   documentation and static-contract change.
+
+## Work Completed
+
+- Added `THIRD_PARTY_NOTICES.md` with the authoritative Twemoji repository,
+  CC BY 4.0 license, Twitter/contributor attribution, and root-license boundary.
+- Recorded that the historical 834-PNG import lacks an exact upstream revision
+  and requires a tag or commit during the next asset refresh.
+- Linked the notice from README, contributor, security, vision, and changelog
+  guidance without modifying the root license, PNG assets, or Xcode project.
+- Added a dependency-free inventory and notice-retention contract to the
+  portable baseline.
+
+## Verification Completed
+
+- Root and external-directory `make check`, `make lint`, `make test`, and
+  `make build` passed the portable maintenance baseline on Linux.
+- Nine isolated hostile mutations were rejected for the notice file, upstream
+  URL, CC BY license URL, copyright attribution, project-license scope,
+  source-revision warning, README linkage, PNG inventory, and reopened plan
+  status.
+- Shell syntax, `git diff --check`, exact-path review, signing/secret-like
+  addition inspection, generated-artifact inspection, and staged-path review
+  passed.
+- No PNG, Xcode project, storyboard, Swift source, signing artifact, or build
+  output changed. Xcode and Messages runtime verification is not applicable to
+  this documentation and static-contract change.

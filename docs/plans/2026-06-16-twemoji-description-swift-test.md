@@ -65,5 +65,8 @@ Completed on 2026-06-16:
   semantics, executable cases, cleanup traps, Make integration, Xcode source
   membership, plan evidence, and maintained documentation.
 - Local `swiftc is unavailable`, so the Make gate reported its explicit skip.
-  Exact-head executable Swift and unsigned simulator-build evidence remains a
-  required hosted macOS pre-merge gate and will be appended after push.
+- Exact implementation head `c85e2bd8b18a961ef0aba84680c288bc8fc05ecd`
+  passed both canonical macOS events: push run `27641789655` / job
+  `81743434694` and pull-request run `27641796128` / job `81743456764`.
+  Each log records `Twemoji description Swift tests passed.`, the maintenance
+  baseline success line, and `BUILD SUCCEEDED` for the unsigned simulator build.

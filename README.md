@@ -73,7 +73,8 @@ the exact Xcode and iOS runtime when performing manual verification.
 
 ## Testing and Verification
 
-Run the static maintenance gate:
+Run the maintenance gate, including portable Twemoji description behavior tests
+when `swiftc` is available:
 
 ```bash
 make check
@@ -87,8 +88,11 @@ make xcode-build
 source invariants, child-controller setup order, and bundled Twemoji PNG
 signatures. It also scans Swift sources for network, analytics, ad identifier,
 camera, microphone, location, webview APIs, and debug logging. `make lint`,
-`make test`, and `make build` run the same static baseline on machines without
-Xcode. When `xcodebuild` is installed, the baseline checks that Xcode can read
+`make lint` and `make build` run the static baseline. `make test` compiles the
+framework-independent decoder and its executable cases with `swiftc`; it reports
+a truthful skip when Swift is unavailable. Twemoji description behavior covers
+valid single- and multi-scalar filenames plus invalid-input fallback cases.
+When `xcodebuild` is installed, the baseline checks that Xcode can read
 `Twemoji.xcodeproj`; `make xcode-build` performs an unsigned iPhone Simulator
 build of the host app and Messages extension.
 

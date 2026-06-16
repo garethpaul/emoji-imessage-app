@@ -40,7 +40,7 @@ class TwemojiBrowserViewController: MSStickerBrowserViewController {
     }
     
     func createSticker(file: String, resourcePath: String) {
-        let stickerDescription = localizedDescription(for: file)
+        let stickerDescription = TwemojiDescription.localizedDescription(for: file)
         let stickerPath = (resourcePath as NSString).appendingPathComponent(file)
         let stickerURL = URL(fileURLWithPath: stickerPath)
         let sticker: MSSticker
@@ -52,23 +52,6 @@ class TwemojiBrowserViewController: MSStickerBrowserViewController {
         }
     }
 
-    private func localizedDescription(for file: String) -> String {
-        let assetName = (file as NSString).deletingPathExtension
-        let components = assetName.split(separator: "-", omittingEmptySubsequences: false)
-        var description = ""
-
-        for component in components {
-            guard !component.isEmpty,
-                  let value = UInt32(String(component), radix: 16),
-                  let scalar = UnicodeScalar(value) else {
-                return assetName
-            }
-            description.unicodeScalars.append(scalar)
-        }
-
-        return description.isEmpty ? assetName : description
-    }
-    
     override func numberOfStickers(in stickerBrowserView: MSStickerBrowserView) -> Int {
         return stickers.count
     }

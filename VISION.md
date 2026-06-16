@@ -39,6 +39,8 @@ Current baseline:
 - Sticker asset names are derived by stripping only the PNG path extension.
 - Sticker accessibility descriptions decode valid hyphen-separated Unicode
   scalar stems into the emoji sequence with an asset-name fallback.
+- Twemoji description behavior is executable on a standard Swift compiler,
+  independent of UIKit, Messages, signing, and the iMessage host.
 - Sticker loading reloads the sticker browser after every load attempt, including
   fail-closed resource lookup paths.
 - The sticker browser is sized to the Messages extension container bounds and

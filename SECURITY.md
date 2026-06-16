@@ -64,6 +64,8 @@ terminal `IEND` without trailing bytes.
 
 Sticker accessibility labels decode only validated hexadecimal Unicode scalar
 stems and fall back to the extensionless asset name on future invalid input.
+Portable Twemoji description behavior tests execute both valid decoding and
+fail-closed fallback cases without loading UIKit, Messages, or sticker assets.
 The extension storyboard contains no template label behind the programmatic
 sticker browser and exposes no stale placeholder content to accessibility APIs.
 Manual Messages verification should confirm that VoiceOver announces both a

@@ -8,6 +8,9 @@ AGENTS="$ROOT_DIR/AGENTS.md"
 PROJECT="$ROOT_DIR/Twemoji.xcodeproj/project.pbxproj"
 MESSAGES_VIEW="$ROOT_DIR/MessagesExtension/MessagesViewController.swift"
 BROWSER_VIEW="$ROOT_DIR/MessagesExtension/TwemojiBrowserViewController.swift"
+DESCRIPTION_SOURCE="$ROOT_DIR/MessagesExtension/TwemojiDescription.swift"
+DESCRIPTION_TEST="$ROOT_DIR/Tests/TwemojiDescriptionTests/main.swift"
+DESCRIPTION_RUNNER="$ROOT_DIR/scripts/test-twemoji-description.sh"
 STORYBOARD="$ROOT_DIR/MessagesExtension/Base.lproj/MainInterface.storyboard"
 PLAN="$ROOT_DIR/docs/plans/2026-06-08-emoji-imessage-app-maintenance-baseline.md"
 RELOAD_PLAN="$ROOT_DIR/docs/plans/2026-06-08-emoji-imessage-sticker-reload.md"
@@ -27,6 +30,7 @@ MANUAL_VERIFICATION_PLAN="$ROOT_DIR/docs/plans/2026-06-13-emoji-manual-sticker-v
 STORYBOARD_PLACEHOLDER_PLAN="$ROOT_DIR/docs/plans/2026-06-13-emoji-storyboard-placeholder-removal.md"
 LOCATION_INDEPENDENT_MAKE_PLAN="$ROOT_DIR/docs/plans/2026-06-14-emoji-location-independent-make.md"
 TWEMOJI_ATTRIBUTION_PLAN="$ROOT_DIR/docs/plans/2026-06-15-twemoji-graphics-attribution.md"
+DESCRIPTION_TEST_PLAN="$ROOT_DIR/docs/plans/2026-06-16-twemoji-description-swift-test.md"
 THIRD_PARTY_NOTICES="$ROOT_DIR/THIRD_PARTY_NOTICES.md"
 CI_WORKFLOW="$ROOT_DIR/.github/workflows/check.yml"
 
@@ -54,6 +58,9 @@ for path in \
   "MessagesExtension/Base.lproj/MainInterface.storyboard" \
   "MessagesExtension/MessagesViewController.swift" \
   "MessagesExtension/TwemojiBrowserViewController.swift" \
+  "MessagesExtension/TwemojiDescription.swift" \
+  "Tests/TwemojiDescriptionTests/main.swift" \
+  "scripts/test-twemoji-description.sh" \
   "docs/plans/2026-06-09-emoji-imessage-privacy-source-guard.md" \
   "docs/plans/2026-06-09-emoji-imessage-asset-name-normalization.md" \
   "docs/plans/2026-06-09-emoji-imessage-png-extension-filter.md" \
@@ -70,6 +77,7 @@ for path in \
   "docs/plans/2026-06-13-emoji-storyboard-placeholder-removal.md" \
   "docs/plans/2026-06-14-emoji-location-independent-make.md" \
   "docs/plans/2026-06-15-twemoji-graphics-attribution.md" \
+  "docs/plans/2026-06-16-twemoji-description-swift-test.md" \
   "docs/plans/2026-06-08-emoji-imessage-sticker-reload.md" \
   "docs/plans/2026-06-08-emoji-imessage-app-maintenance-baseline.md"; do
   require_file "$path"
@@ -294,12 +302,15 @@ fi
 
 if ! grep -Fq 'override ROOT := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))' "$ROOT_DIR/Makefile" ||
   ! grep -Fq '"$(ROOT)scripts/check-baseline.sh"' "$ROOT_DIR/Makefile" ||
+  ! grep -Fq '"$(ROOT)scripts/test-twemoji-description.sh"' "$ROOT_DIR/Makefile" ||
   [ "$(grep -Fc '"$(ROOT)Twemoji.xcodeproj"' "$ROOT_DIR/Makefile")" -ne 2 ] ||
   grep -Fq '@scripts/check-baseline.sh' "$ROOT_DIR/Makefile" ||
   grep -Fq -- '-project Twemoji.xcodeproj' "$ROOT_DIR/Makefile" ||
-  ! grep -Fq "lint: check" "$ROOT_DIR/Makefile" ||
-  ! grep -Fq "test: check" "$ROOT_DIR/Makefile" ||
-  ! grep -Fq "build: check" "$ROOT_DIR/Makefile" ||
+  ! grep -Fq "SWIFTC ?= swiftc" "$ROOT_DIR/Makefile" ||
+  ! grep -Fq "check: lint test" "$ROOT_DIR/Makefile" ||
+  ! grep -Fq "build: lint" "$ROOT_DIR/Makefile" ||
+  ! grep -Fq 'command -v "$(SWIFTC)"' "$ROOT_DIR/Makefile" ||
+  ! grep -Fq 'swiftc unavailable; skipping Twemoji description Swift tests' "$ROOT_DIR/Makefile" ||
   ! grep -Fq "xcode-build:" "$ROOT_DIR/Makefile" ||
   ! grep -Fq '"$(ROOT)Twemoji.xcodeproj" -target Twemoji -sdk iphonesimulator' "$ROOT_DIR/Makefile" ||
   ! grep -Fq "CODE_SIGNING_ALLOWED=NO" "$ROOT_DIR/Makefile" ||
@@ -383,27 +394,65 @@ if grep -Fq "browserViewController.stickerBrowserView.reloadData()" "$MESSAGES_V
   exit 1
 fi
 
-if ! grep -Fq "(file as NSString).deletingPathExtension" "$BROWSER_VIEW" ||
-  grep -Fq 'replacingOccurrences(of: ".png", with: "")' "$BROWSER_VIEW"; then
+if ! grep -Fq "(file as NSString).deletingPathExtension" "$DESCRIPTION_SOURCE" ||
+  grep -Fq 'replacingOccurrences(of: ".png", with: "")' "$DESCRIPTION_SOURCE"; then
   printf '%s\n' "Sticker loading must derive asset names by stripping only the path extension." >&2
   exit 1
 fi
 
 for description_contract in \
-  "private func localizedDescription(for file: String) -> String" \
+  "static func localizedDescription(for file: String) -> String" \
   'assetName.split(separator: "-", omittingEmptySubsequences: false)' \
   'UInt32(String(component), radix: 16)' \
   "UnicodeScalar(value)" \
   "description.unicodeScalars.append(scalar)" \
-  "return assetName" \
-  "let stickerDescription = localizedDescription(for: file)" \
-  "localizedDescription: stickerDescription" \
-  "localizedDescription(for: file)"; do
-  if ! grep -Fq "$description_contract" "$BROWSER_VIEW"; then
+  "return assetName"; do
+  if ! grep -Fq "$description_contract" "$DESCRIPTION_SOURCE"; then
     printf '%s\n' "Sticker Unicode description contract is missing: $description_contract" >&2
     exit 1
   fi
 done
+
+if ! grep -Fq "let stickerDescription = TwemojiDescription.localizedDescription(for: file)" "$BROWSER_VIEW" ||
+  ! grep -Fq "localizedDescription: stickerDescription" "$BROWSER_VIEW" ||
+  grep -Fq "private func localizedDescription" "$BROWSER_VIEW" ||
+  grep -Eq '^import (UIKit|Messages)$' "$DESCRIPTION_SOURCE"; then
+  printf '%s\n' "Sticker descriptions must use the framework-independent decoder from the Messages controller." >&2
+  exit 1
+fi
+
+for test_contract in \
+  'assertDescription("\u{1F600}", file: "1f600.png", caseName: "single scalar")' \
+  'assertDescription("\u{1F1FA}\u{1F1F8}", file: "1f1fa-1f1f8.png", caseName: "multi scalar")' \
+  'assertDescription("\u{1F600}", file: "1f600.PNG", caseName: "uppercase extension")' \
+  'assertDescription("\u{1F600}", file: "1f600", caseName: "missing extension")' \
+  'assertDescription("not-hex", file: "not-hex.png", caseName: "invalid hexadecimal")' \
+  'assertDescription("1f600-", file: "1f600-.png", caseName: "empty component")' \
+  'assertDescription("d800", file: "d800.png", caseName: "surrogate scalar")' \
+  'assertDescription("1f600.preview", file: "1f600.preview.png", caseName: "multi-dot fallback")'; do
+  if ! grep -Fq "$test_contract" "$DESCRIPTION_TEST"; then
+    printf '%s\n' "Twemoji description executable test case is missing: $test_contract" >&2
+    exit 1
+  fi
+done
+
+if [ ! -x "$DESCRIPTION_RUNNER" ] ||
+  ! grep -Fq 'BUILD_DIR=$(mktemp -d' "$DESCRIPTION_RUNNER" ||
+  ! grep -Fq 'trap cleanup 0' "$DESCRIPTION_RUNNER" ||
+  ! grep -Fq "trap 'exit 129' 1" "$DESCRIPTION_RUNNER" ||
+  ! grep -Fq "trap 'exit 130' 2" "$DESCRIPTION_RUNNER" ||
+  ! grep -Fq "trap 'exit 143' 15" "$DESCRIPTION_RUNNER" ||
+  ! grep -Fq 'MessagesExtension/TwemojiDescription.swift' "$DESCRIPTION_RUNNER" ||
+  ! grep -Fq 'Tests/TwemojiDescriptionTests/main.swift' "$DESCRIPTION_RUNNER" ||
+  ! grep -Fq '"$BUILD_DIR/twemoji-description-tests"' "$DESCRIPTION_RUNNER"; then
+  printf '%s\n' "Twemoji description test runner must compile production code and clean temporary output on every exit path." >&2
+  exit 1
+fi
+
+if ! sh -n "$DESCRIPTION_RUNNER"; then
+  printf '%s\n' "Twemoji description test runner must remain valid POSIX shell." >&2
+  exit 1
+fi
 
 python3 - "$ROOT_DIR/MessagesExtension" <<'PY'
 import pathlib
@@ -531,7 +580,9 @@ if [ "$(grep -Fc "SWIFT_VERSION = 5.0;" "$PROJECT")" -ne 4 ] ||
   [ "$(grep -Fc "IPHONEOS_DEPLOYMENT_TARGET = 12.0;" "$PROJECT")" -ne 2 ] ||
   grep -Fq "IPHONEOS_DEPLOYMENT_TARGET = 10.0;" "$PROJECT" ||
   ! grep -Fq "MessagesViewController.swift in Sources" "$PROJECT" ||
-  ! grep -Fq "TwemojiBrowserViewController.swift in Sources" "$PROJECT"; then
+  ! grep -Fq "TwemojiBrowserViewController.swift in Sources" "$PROJECT" ||
+  [ "$(grep -Fc "TwemojiDescription.swift in Sources" "$PROJECT")" -ne 2 ] ||
+  [ "$(grep -Fc "TwemojiDescription.swift */ =" "$PROJECT")" -ne 1 ]; then
   printf '%s\n' "Xcode project must preserve the Swift 5 / iOS 12 extension baseline." >&2
   exit 1
 fi
@@ -768,6 +819,23 @@ if ! grep -Fq "Status: Completed" "$SWIFT5_PLAN" ||
   printf '%s\n' "Swift 5 build plan must remain completed with hosted Xcode verification recorded." >&2
   exit 1
 fi
+
+if ! grep -Fq "status: completed" "$DESCRIPTION_TEST_PLAN" ||
+  ! grep -Fq "make check" "$DESCRIPTION_TEST_PLAN" ||
+  ! grep -Fq "external working directory" "$DESCRIPTION_TEST_PLAN" ||
+  ! grep -Fq "hostile mutations" "$DESCRIPTION_TEST_PLAN" ||
+  ! grep -Fq "swiftc is unavailable" "$DESCRIPTION_TEST_PLAN" ||
+  ! grep -Fq "hosted macOS" "$DESCRIPTION_TEST_PLAN"; then
+  printf '%s\n' "Twemoji description Swift-test plan must record completed and truthful verification." >&2
+  exit 1
+fi
+
+for document in "$README" "$AGENTS" "$ROOT_DIR/SECURITY.md" "$VISION" "$ROOT_DIR/CHANGES.md"; do
+  if ! grep -Fq "Twemoji description behavior" "$document"; then
+    printf '%s\n' "$document must document executable Twemoji description behavior verification." >&2
+    exit 1
+  fi
+done
 
 for png_integrity_contract in \
   "zlib.crc32" \

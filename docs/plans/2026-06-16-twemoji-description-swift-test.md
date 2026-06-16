@@ -66,7 +66,7 @@ Completed on 2026-06-16:
   membership, plan evidence, and maintained documentation.
 - Local `swiftc is unavailable`, so the Make gate reported its explicit skip.
 - Exact implementation head `c85e2bd8b18a961ef0aba84680c288bc8fc05ecd`
-  passed both canonical macOS events: push run `27641789655` / job
+  passed both canonical hosted macOS events: push run `27641789655` / job
   `81743434694` and pull-request run `27641796128` / job `81743456764`.
   Each log records `Twemoji description Swift tests passed.`, the maintenance
   baseline success line, and `BUILD SUCCEEDED` for the unsigned simulator build.

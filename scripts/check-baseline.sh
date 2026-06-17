@@ -820,15 +820,23 @@ if ! grep -Fq "Status: Completed" "$SWIFT5_PLAN" ||
   exit 1
 fi
 
-if ! grep -Fq "status: completed" "$DESCRIPTION_TEST_PLAN" ||
-  ! grep -Fq "make check" "$DESCRIPTION_TEST_PLAN" ||
-  ! grep -Fq "external working directory" "$DESCRIPTION_TEST_PLAN" ||
-  ! grep -Fq "hostile mutations" "$DESCRIPTION_TEST_PLAN" ||
-  ! grep -Fq "swiftc is unavailable" "$DESCRIPTION_TEST_PLAN" ||
-  ! grep -Fq "hosted macOS" "$DESCRIPTION_TEST_PLAN"; then
-  printf '%s\n' "Twemoji description Swift-test plan must record completed and truthful verification." >&2
-  exit 1
-fi
+for description_plan_contract in \
+  "status: completed" \
+  "make check" \
+  "external working directory" \
+  "hostile mutations" \
+  "swiftc is unavailable" \
+  "hosted macOS" \
+  "c85e2bd8b18a961ef0aba84680c288bc8fc05ecd" \
+  'push run `27641789655`' \
+  'pull-request run `27641796128`' \
+  'Twemoji description Swift tests passed.' \
+  'BUILD SUCCEEDED'; do
+  if ! grep -Fq "$description_plan_contract" "$DESCRIPTION_TEST_PLAN"; then
+    printf '%s\n' "Twemoji description Swift-test plan must retain evidence: $description_plan_contract" >&2
+    exit 1
+  fi
+done
 
 for document in "$README" "$AGENTS" "$ROOT_DIR/SECURITY.md" "$VISION" "$ROOT_DIR/CHANGES.md"; do
   if ! grep -Fq "Twemoji description behavior" "$document"; then

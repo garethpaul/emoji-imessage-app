@@ -32,7 +32,7 @@
 
 ## Testing guidance
 
-- No XCTest target is present; `make check` is the maintained static regression gate and also parses the Xcode project when `xcodebuild` is available.
+- No XCTest target is present; `make check` combines the maintained static regression gate with executable Twemoji description behavior and sticker-resource policy tests when `swiftc` is available, and also parses the Xcode project when `xcodebuild` is available.
 - `make check` and `make xcode-build` do not prove Messages-host interaction; record the exact Xcode/iOS runtime and separately exercise sticker selection, preview, send, transcript, and VoiceOver behavior.
 - Start with the narrowest relevant test or Make target, then run `make check` before handing off if the change is not documentation-only.
 - Keep README verification notes in sync when commands, fixtures, or supported toolchains change.
@@ -55,6 +55,7 @@
 - Keep the extension free of message-content collection, analytics, and network behavior unless a future change documents the user value and privacy model.
 - Keep sticker loading free of debug logging that reveals bundle paths, asset names, or local errors.
 - Preserve case-insensitive PNG discovery, exact discovered resource paths, extension-only asset-name normalization, and browser reload ownership after every load attempt.
+- Preserve direct regular-file discovery, symlink rejection, the 500-KiB per-file bound, and the 1,024-sticker runtime cap.
 - Keep every bundled sticker structurally valid. The baseline parses PNG chunks, verifies CRCs and boundaries, requires `IHDR`, image data, and terminal `IEND`, and rejects trailing bytes.
 - This looks like an Apple platform project or sample. Xcode, Swift, CocoaPods, and deployment target versions may need to match the original project era.
 - Manual verification must not be reported complete from static checks or an unsigned build alone.

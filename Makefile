@@ -2,15 +2,21 @@
 
 override ROOT := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 XCODEBUILD ?= xcodebuild
+SWIFTC ?= swiftc
 
-check:
+check: lint test
+
+lint:
 	@"$(ROOT)scripts/check-baseline.sh"
 
-lint: check
+test:
+	@if command -v "$(SWIFTC)" >/dev/null 2>&1; then \
+		SWIFTC="$(SWIFTC)" "$(ROOT)scripts/test-twemoji-description.sh"; \
+	else \
+		echo "swiftc unavailable; skipping Twemoji description Swift tests"; \
+	fi
 
-test: check
-
-build: check
+build: lint
 
 xcode-list:
 	@$(XCODEBUILD) -list -project "$(ROOT)Twemoji.xcodeproj"

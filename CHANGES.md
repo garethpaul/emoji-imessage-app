@@ -1,5 +1,18 @@
 # Changes
 
+## 2026-06-19
+
+- Hardened runtime sticker discovery to accept only direct regular non-symlink
+  PNG files, reject empty or oversized entries, and cap deterministic loading.
+- Extended executable Swift coverage through the real resource policy and
+  accessibility-description code paths.
+
+## 2026-06-16
+
+- Extracted Twemoji description behavior into framework-independent Swift and
+  added executable valid-decoding and invalid-input fallback cases to
+  `make check`.
+
 ## 2026-06-15
 
 - Bundled Twemoji graphics are attributed in THIRD_PARTY_NOTICES.md under CC BY 4.0.

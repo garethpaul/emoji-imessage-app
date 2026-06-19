@@ -14,6 +14,8 @@
 		7F7D70C21D11D88500FC514F /* MainInterface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7F7D70C01D11D88500FC514F /* MainInterface.storyboard */; };
 		7F7D70C41D11D88500FC514F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7F7D70C31D11D88500FC514F /* Assets.xcassets */; };
 		7F7D70D01D11D99B00FC514F /* TwemojiBrowserViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F7D70CF1D11D99B00FC514F /* TwemojiBrowserViewController.swift */; };
+		7F7D80021D11D99B00FC514F /* TwemojiDescription.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F7D80011D11D99B00FC514F /* TwemojiDescription.swift */; };
+		7F7D80041D11D99B00FC514F /* StickerResourcePolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F7D80031D11D99B00FC514F /* StickerResourcePolicy.swift */; };
 		7F7D745F1D11DC0D00FC514F /* 1f3a0.png in Resources */ = {isa = PBXBuildFile; fileRef = 7F7D70F71D11DC0900FC514F /* 1f3a0.png */; };
 		7F7D74601D11DC0D00FC514F /* 1f3a1.png in Resources */ = {isa = PBXBuildFile; fileRef = 7F7D70F81D11DC0900FC514F /* 1f3a1.png */; };
 		7F7D74611D11DC0D00FC514F /* 1f3a2.png in Resources */ = {isa = PBXBuildFile; fileRef = 7F7D70F91D11DC0900FC514F /* 1f3a2.png */; };
@@ -885,6 +887,8 @@
 		7F7D70C31D11D88500FC514F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		7F7D70C51D11D88500FC514F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		7F7D70CF1D11D99B00FC514F /* TwemojiBrowserViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TwemojiBrowserViewController.swift; sourceTree = "<group>"; };
+		7F7D80011D11D99B00FC514F /* TwemojiDescription.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TwemojiDescription.swift; sourceTree = "<group>"; };
+		7F7D80031D11D99B00FC514F /* StickerResourcePolicy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StickerResourcePolicy.swift; sourceTree = "<group>"; };
 		7F7D70F71D11DC0900FC514F /* 1f3a0.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = 1f3a0.png; sourceTree = "<group>"; };
 		7F7D70F81D11DC0900FC514F /* 1f3a1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = 1f3a1.png; sourceTree = "<group>"; };
 		7F7D70F91D11DC0900FC514F /* 1f3a2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = 1f3a2.png; sourceTree = "<group>"; };
@@ -1775,6 +1779,8 @@
 				7F7D70D11D11DBFA00FC514F /* Stickers */,
 				7F7D70BE1D11D88500FC514F /* MessagesViewController.swift */,
 				7F7D70CF1D11D99B00FC514F /* TwemojiBrowserViewController.swift */,
+				7F7D80011D11D99B00FC514F /* TwemojiDescription.swift */,
+				7F7D80031D11D99B00FC514F /* StickerResourcePolicy.swift */,
 				7F7D70C01D11D88500FC514F /* MainInterface.storyboard */,
 				7F7D70C31D11D88500FC514F /* Assets.xcassets */,
 				7F7D70C51D11D88500FC514F /* Info.plist */,
@@ -3564,6 +3570,8 @@
 			files = (
 				7F7D70BF1D11D88500FC514F /* MessagesViewController.swift in Sources */,
 				7F7D70D01D11D99B00FC514F /* TwemojiBrowserViewController.swift in Sources */,
+				7F7D80021D11D99B00FC514F /* TwemojiDescription.swift in Sources */,
+				7F7D80041D11D99B00FC514F /* StickerResourcePolicy.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

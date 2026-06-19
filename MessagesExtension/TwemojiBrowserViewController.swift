@@ -11,7 +11,7 @@ import UIKit
 import Messages
 
 class TwemojiBrowserViewController: MSStickerBrowserViewController {
-    var stickers = [MSSticker]()
+    private var stickers = [MSSticker]()
     
     func loadStickers() {
         stickers.removeAll()
@@ -19,30 +19,21 @@ class TwemojiBrowserViewController: MSStickerBrowserViewController {
             stickerBrowserView.reloadData()
         }
 
-        guard let docsPath = Bundle.main.resourcePath else {
+        guard let resourceURL = Bundle.main.resourceURL else {
             return
         }
 
-        let fileManager = FileManager.default
-
         do {
-            let directoryContents = try fileManager.contentsOfDirectory(atPath: docsPath).sorted()
-            for file in directoryContents where isPNGResource(file) {
-                createSticker(file: file, resourcePath: docsPath)
+            for stickerURL in try StickerResourcePolicy.discoverStickerURLs(in: resourceURL) {
+                createSticker(at: stickerURL)
             }
         } catch {
             return
         }
     }
 
-    private func isPNGResource(_ file: String) -> Bool {
-        return (file as NSString).pathExtension.lowercased() == "png"
-    }
-    
-    func createSticker(file: String, resourcePath: String) {
-        let stickerDescription = localizedDescription(for: file)
-        let stickerPath = (resourcePath as NSString).appendingPathComponent(file)
-        let stickerURL = URL(fileURLWithPath: stickerPath)
+    private func createSticker(at stickerURL: URL) {
+        let stickerDescription = TwemojiDescription.localizedDescription(for: stickerURL.lastPathComponent)
         let sticker: MSSticker
         do {
             try sticker = MSSticker(contentsOfFileURL: stickerURL, localizedDescription: stickerDescription)
@@ -52,23 +43,6 @@ class TwemojiBrowserViewController: MSStickerBrowserViewController {
         }
     }
 
-    private func localizedDescription(for file: String) -> String {
-        let assetName = (file as NSString).deletingPathExtension
-        let components = assetName.split(separator: "-", omittingEmptySubsequences: false)
-        var description = ""
-
-        for component in components {
-            guard !component.isEmpty,
-                  let value = UInt32(String(component), radix: 16),
-                  let scalar = UnicodeScalar(value) else {
-                return assetName
-            }
-            description.unicodeScalars.append(scalar)
-        }
-
-        return description.isEmpty ? assetName : description
-    }
-    
     override func numberOfStickers(in stickerBrowserView: MSStickerBrowserView) -> Int {
         return stickers.count
     }

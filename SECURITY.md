@@ -51,6 +51,10 @@ data, archives, and build outputs should remain untracked.
 Sticker loading should not use debug logging that exposes bundle paths, asset
 names, or local errors from the Messages extension.
 
+Sticker discovery accepts only direct regular non-symlink PNG resources,
+rejects empty or larger-than-500-KiB files, and caps deterministic loading at
+1,024 entries before `MSSticker` validates image contents.
+
 Sticker loading reloads the sticker browser after every load attempt so failed
 resource lookups clear stale visible sticker data.
 
@@ -64,6 +68,8 @@ terminal `IEND` without trailing bytes.
 
 Sticker accessibility labels decode only validated hexadecimal Unicode scalar
 stems and fall back to the extensionless asset name on future invalid input.
+Portable Twemoji description behavior tests execute both valid decoding and
+fail-closed fallback cases without loading UIKit, Messages, or sticker assets.
 The extension storyboard contains no template label behind the programmatic
 sticker browser and exposes no stale placeholder content to accessibility APIs.
 Manual Messages verification should confirm that VoiceOver announces both a

@@ -73,7 +73,8 @@ the exact Xcode and iOS runtime when performing manual verification.
 
 ## Testing and Verification
 
-Run the static maintenance gate:
+Run the maintenance gate, including portable Twemoji description behavior tests
+when `swiftc` is available:
 
 ```bash
 make check
@@ -87,8 +88,11 @@ make xcode-build
 source invariants, child-controller setup order, and bundled Twemoji PNG
 signatures. It also scans Swift sources for network, analytics, ad identifier,
 camera, microphone, location, webview APIs, and debug logging. `make lint`,
-`make test`, and `make build` run the same static baseline on machines without
-Xcode. When `xcodebuild` is installed, the baseline checks that Xcode can read
+`make lint` and `make build` run the static baseline. `make test` compiles the
+framework-independent decoder and its executable cases with `swiftc`; it reports
+a truthful skip when Swift is unavailable. Twemoji description behavior covers
+valid single- and multi-scalar filenames plus invalid-input fallback cases.
+When `xcodebuild` is installed, the baseline checks that Xcode can read
 `Twemoji.xcodeproj`; `make xcode-build` performs an unsigned iPhone Simulator
 build of the host app and Messages extension.
 
@@ -102,6 +106,10 @@ before `MSSticker` silently skips an asset at runtime.
 Sticker accessibility descriptions decode each hyphen-separated hexadecimal
 asset stem into its Unicode emoji sequence. A future invalid stem falls back to
 the extensionless filename instead of dropping the sticker or crashing.
+Runtime discovery accepts only direct, regular, non-symlink PNG files between
+1 byte and 500 KiB, sorts them by filename, and caps the browser at 1,024
+stickers. Malformed image contents are skipped by `MSSticker` without leaving
+stale browser data visible.
 The extension storyboard contains no template label or placeholder subview;
 the programmatic sticker browser is the sole content surface.
 
@@ -167,6 +175,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   names, or local errors.
 - Keep sticker loading responsible for its own browser reload so failed loads do
   not leave stale stickers visible.
+- Preserve the runtime regular-file, symlink, path-containment, file-size, and
+  sticker-count bounds when changing bundle resource discovery.
 - Keep the bundled sticker corpus structurally valid; the baseline verifies PNG
   chunks and CRCs rather than accepting signature-only files.
 

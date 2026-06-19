@@ -1,18 +1,25 @@
 .PHONY: build check lint test xcode-list xcode-build
 
+override ROOT := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 XCODEBUILD ?= xcodebuild
+SWIFTC ?= swiftc
 
-check:
-	@scripts/check-baseline.sh
+check: lint test
 
-lint: check
+lint:
+	@"$(ROOT)scripts/check-baseline.sh"
 
-test: check
+test:
+	@if command -v "$(SWIFTC)" >/dev/null 2>&1; then \
+		SWIFTC="$(SWIFTC)" "$(ROOT)scripts/test-twemoji-description.sh"; \
+	else \
+		echo "swiftc unavailable; skipping Twemoji description Swift tests"; \
+	fi
 
-build: check
+build: lint
 
 xcode-list:
-	@$(XCODEBUILD) -list -project Twemoji.xcodeproj
+	@$(XCODEBUILD) -list -project "$(ROOT)Twemoji.xcodeproj"
 
 xcode-build:
-	@$(XCODEBUILD) -project Twemoji.xcodeproj -target Twemoji -sdk iphonesimulator -configuration Debug CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO ONLY_ACTIVE_ARCH=NO DISABLE_MANUAL_TARGET_ORDER_BUILD_WARNING=YES build
+	@$(XCODEBUILD) -project "$(ROOT)Twemoji.xcodeproj" -target Twemoji -sdk iphonesimulator -configuration Debug CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO ONLY_ACTIVE_ARCH=NO DISABLE_MANUAL_TARGET_ORDER_BUILD_WARNING=YES build

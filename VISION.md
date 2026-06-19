@@ -24,6 +24,9 @@ Priority:
 
 Current baseline:
 
+- Bundled Twemoji graphics are attributed in THIRD_PARTY_NOTICES.md under CC BY 4.0.
+- The current 834-PNG historical import has no recorded upstream revision;
+  future refreshes must record an exact tag or commit.
 - `scripts/check-baseline.sh` validates project metadata, extension plists,
   Swift source invariants, and Twemoji PNG signatures.
 - The project uses Swift 5 and current UIKit/Foundation child-controller and
@@ -31,15 +34,23 @@ Current baseline:
 - Sticker discovery uses deterministic sticker loading by sorted bundle
   filename and clears stale state before reloading.
 - Sticker discovery filters resources by case-insensitive PNG path extension.
+- Sticker discovery rejects symlinks, non-regular or indirect paths, empty or
+  oversized files, and more than 1,024 candidates.
 - Sticker creation uses exact discovered PNG file paths so resource loading
   stays aligned with discovery.
 - Sticker asset names are derived by stripping only the PNG path extension.
+- Sticker accessibility descriptions decode valid hyphen-separated Unicode
+  scalar stems into the emoji sequence with an asset-name fallback.
+- Twemoji description behavior is executable on a standard Swift compiler,
+  independent of UIKit, Messages, signing, and the iMessage host.
 - Sticker loading reloads the sticker browser after every load attempt, including
   fail-closed resource lookup paths.
 - The sticker browser is sized to the Messages extension container bounds and
   resizes with the host view.
 - The sticker browser child controller is retained explicitly and follows the
   add-child, add-view, did-move lifecycle order.
+- The extension storyboard has no template label or placeholder subview behind
+  the programmatic sticker browser.
 - The checked-in Swift source has no network or analytics behavior.
 - Sticker loading avoids debug logging of bundle paths, asset names, and local
   errors.
@@ -51,12 +62,13 @@ Current baseline:
   macOS runner so the Swift 5 host app and extension compile before review.
 - The maintenance gate parses every bundled sticker PNG and verifies complete
   chunk structure and CRC integrity before review.
+- Manual Messages verification is documented separately from static/build
+  evidence and covers sticker selection, preview, send, transcript appearance,
+  VoiceOver descriptions, stale content, logging, permissions, and networking.
 
 Next priorities:
 
-- Document Xcode and iOS version expectations
-- Clarify emoji asset licensing and update process
-- Add manual verification notes for selecting and sending an emoji
+- Record the exact upstream revision during the next reviewed asset refresh
 
 Contribution rules:
 

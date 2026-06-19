@@ -4,9 +4,15 @@ set -eu
 ROOT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 README="$ROOT_DIR/README.md"
 VISION="$ROOT_DIR/VISION.md"
+AGENTS="$ROOT_DIR/AGENTS.md"
 PROJECT="$ROOT_DIR/Twemoji.xcodeproj/project.pbxproj"
 MESSAGES_VIEW="$ROOT_DIR/MessagesExtension/MessagesViewController.swift"
 BROWSER_VIEW="$ROOT_DIR/MessagesExtension/TwemojiBrowserViewController.swift"
+DESCRIPTION_SOURCE="$ROOT_DIR/MessagesExtension/TwemojiDescription.swift"
+RESOURCE_POLICY_SOURCE="$ROOT_DIR/MessagesExtension/StickerResourcePolicy.swift"
+DESCRIPTION_TEST="$ROOT_DIR/Tests/TwemojiDescriptionTests/main.swift"
+DESCRIPTION_RUNNER="$ROOT_DIR/scripts/test-twemoji-description.sh"
+STORYBOARD="$ROOT_DIR/MessagesExtension/Base.lproj/MainInterface.storyboard"
 PLAN="$ROOT_DIR/docs/plans/2026-06-08-emoji-imessage-app-maintenance-baseline.md"
 RELOAD_PLAN="$ROOT_DIR/docs/plans/2026-06-08-emoji-imessage-sticker-reload.md"
 LIFECYCLE_PLAN="$ROOT_DIR/docs/plans/2026-06-09-emoji-imessage-child-lifecycle.md"
@@ -20,6 +26,13 @@ LOAD_RELOAD_PLAN="$ROOT_DIR/docs/plans/2026-06-09-emoji-imessage-load-reload-own
 CI_PLAN="$ROOT_DIR/docs/plans/2026-06-10-emoji-imessage-ci-baseline.md"
 PNG_INTEGRITY_PLAN="$ROOT_DIR/docs/plans/2026-06-10-emoji-png-integrity.md"
 SWIFT5_PLAN="$ROOT_DIR/docs/plans/2026-06-12-swift5-xcode-build-gate.md"
+ACCESSIBLE_DESCRIPTION_PLAN="$ROOT_DIR/docs/plans/2026-06-13-emoji-accessible-sticker-descriptions.md"
+MANUAL_VERIFICATION_PLAN="$ROOT_DIR/docs/plans/2026-06-13-emoji-manual-sticker-verification.md"
+STORYBOARD_PLACEHOLDER_PLAN="$ROOT_DIR/docs/plans/2026-06-13-emoji-storyboard-placeholder-removal.md"
+LOCATION_INDEPENDENT_MAKE_PLAN="$ROOT_DIR/docs/plans/2026-06-14-emoji-location-independent-make.md"
+TWEMOJI_ATTRIBUTION_PLAN="$ROOT_DIR/docs/plans/2026-06-15-twemoji-graphics-attribution.md"
+DESCRIPTION_TEST_PLAN="$ROOT_DIR/docs/plans/2026-06-16-twemoji-description-swift-test.md"
+THIRD_PARTY_NOTICES="$ROOT_DIR/THIRD_PARTY_NOTICES.md"
 CI_WORKFLOW="$ROOT_DIR/.github/workflows/check.yml"
 
 require_file() {
@@ -36,6 +49,7 @@ for path in \
   "Makefile" \
   "README.md" \
   "SECURITY.md" \
+  "THIRD_PARTY_NOTICES.md" \
   "VISION.md" \
   ".github/workflows/check.yml" \
   "Twemoji.xcodeproj/project.pbxproj" \
@@ -45,6 +59,10 @@ for path in \
   "MessagesExtension/Base.lproj/MainInterface.storyboard" \
   "MessagesExtension/MessagesViewController.swift" \
   "MessagesExtension/TwemojiBrowserViewController.swift" \
+  "MessagesExtension/TwemojiDescription.swift" \
+  "MessagesExtension/StickerResourcePolicy.swift" \
+  "Tests/TwemojiDescriptionTests/main.swift" \
+  "scripts/test-twemoji-description.sh" \
   "docs/plans/2026-06-09-emoji-imessage-privacy-source-guard.md" \
   "docs/plans/2026-06-09-emoji-imessage-asset-name-normalization.md" \
   "docs/plans/2026-06-09-emoji-imessage-png-extension-filter.md" \
@@ -56,10 +74,111 @@ for path in \
   "docs/plans/2026-06-10-emoji-imessage-ci-baseline.md" \
   "docs/plans/2026-06-10-emoji-png-integrity.md" \
   "docs/plans/2026-06-12-swift5-xcode-build-gate.md" \
+  "docs/plans/2026-06-13-emoji-accessible-sticker-descriptions.md" \
+  "docs/plans/2026-06-13-emoji-manual-sticker-verification.md" \
+  "docs/plans/2026-06-13-emoji-storyboard-placeholder-removal.md" \
+  "docs/plans/2026-06-14-emoji-location-independent-make.md" \
+  "docs/plans/2026-06-15-twemoji-graphics-attribution.md" \
+  "docs/plans/2026-06-16-twemoji-description-swift-test.md" \
   "docs/plans/2026-06-08-emoji-imessage-sticker-reload.md" \
   "docs/plans/2026-06-08-emoji-imessage-app-maintenance-baseline.md"; do
   require_file "$path"
 done
+
+png_count=$(find "$ROOT_DIR/MessagesExtension" -maxdepth 1 -type f -iname "*.png" | wc -l | tr -d ' ')
+if [ "$png_count" -ne 834 ]; then
+  printf '%s\n' "Bundled Twemoji inventory changed from 834 PNGs; document the source revision and update attribution evidence." >&2
+  exit 1
+fi
+
+python3 - "$ROOT_DIR/MessagesExtension" <<'PY'
+import stat
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1])
+for path in root.iterdir():
+    if path.suffix.lower() != ".png":
+        continue
+    mode = path.lstat().st_mode
+    if path.is_symlink() or not stat.S_ISREG(mode):
+        raise SystemExit(f"Sticker source must be a regular non-symlink file: {path.name}")
+PY
+
+for attribution_contract in \
+  "The 834 PNG sticker graphics" \
+  "https://github.com/twitter/twemoji" \
+  "Creative Commons Attribution 4.0 International license" \
+  "https://creativecommons.org/licenses/by/4.0/" \
+  "Copyright Twitter, Inc. and other contributors." \
+  "exact upstream tag or commit" \
+  'The root `LICENSE` remains unchanged by this notice.'; do
+  if ! grep -Fq "$attribution_contract" "$THIRD_PARTY_NOTICES"; then
+    printf '%s\n' "Twemoji third-party notice is missing: $attribution_contract" >&2
+    exit 1
+  fi
+done
+
+for attribution_doc in AGENTS.md README.md SECURITY.md VISION.md CHANGES.md; do
+  if ! grep -Fq "Bundled Twemoji graphics are attributed in THIRD_PARTY_NOTICES.md under CC BY 4.0." "$ROOT_DIR/$attribution_doc"; then
+    printf '%s\n' "Twemoji attribution guidance is missing from $attribution_doc" >&2
+    exit 1
+  fi
+done
+
+for attribution_plan_contract in \
+  "status: completed" \
+  "## Work Completed" \
+  "## Verification Completed" \
+  "Nine isolated hostile mutations were rejected" \
+  "Root and external-directory" \
+  "No PNG, Xcode project, storyboard, Swift source"; do
+  if ! grep -Fq "$attribution_plan_contract" "$TWEMOJI_ATTRIBUTION_PLAN"; then
+    printf '%s\n' "Twemoji attribution plan must record completed evidence: $attribution_plan_contract" >&2
+    exit 1
+  fi
+done
+
+python3 - "$STORYBOARD" <<'PY'
+import sys
+import xml.etree.ElementTree as ET
+
+path = sys.argv[1]
+root = ET.parse(path).getroot()
+controllers = [
+    controller
+    for controller in root.iter("viewController")
+    if controller.get("customClass") == "MessagesViewController"
+]
+if len(controllers) != 1:
+    raise SystemExit("Storyboard must contain exactly one MessagesViewController scene.")
+
+view = controllers[0].find("view")
+if view is None:
+    raise SystemExit("MessagesViewController must retain its root view.")
+if list(view.findall("./subviews/*")):
+    raise SystemExit("Messages extension storyboard must not retain template subviews.")
+if list(view.findall("./constraints/constraint")):
+    raise SystemExit("Messages extension storyboard must not retain template constraints.")
+if any(element.get("text") == "Hello World" for element in root.iter()):
+    raise SystemExit("Messages extension storyboard must not retain placeholder text.")
+PY
+
+if ! grep -Fq "status: completed" "$STORYBOARD_PLACEHOLDER_PLAN" ||
+  ! grep -Fq "hostile mutations were rejected" "$STORYBOARD_PLACEHOLDER_PLAN" ||
+  ! grep -Fq "not performed locally" "$STORYBOARD_PLACEHOLDER_PLAN" ||
+  ! grep -Fq "hosted macOS build" "$STORYBOARD_PLACEHOLDER_PLAN"; then
+  printf '%s\n' "Storyboard placeholder-removal plan must record truthful completed evidence." >&2
+  exit 1
+fi
+
+if ! grep -Fq "no template label or placeholder subview" "$README" ||
+  ! grep -Fq "no template label behind" "$ROOT_DIR/SECURITY.md" ||
+  ! grep -Fq "no template label or placeholder subview" "$VISION" ||
+  ! grep -Fq "storyboard's template label and constraints" "$ROOT_DIR/CHANGES.md"; then
+  printf '%s\n' "Project docs must preserve the extension storyboard placeholder boundary." >&2
+  exit 1
+fi
 
 if ! grep -Fq "make check" "$README" ||
   ! grep -Fq "Twemoji image set" "$README" ||
@@ -74,10 +193,15 @@ if ! grep -Fq "make check" "$README" ||
   exit 1
 fi
 
+if ! grep -Fq "Swift 5 iMessage extension" "$AGENTS" || \
+  ! grep -Fq "It targets iOS 12" "$AGENTS" || \
+  ! grep -Fq "Swift 5, iOS 12, unsigned simulator-build" "$AGENTS"; then
+  printf '%s\n' "AGENTS.md must document the supported Swift, iOS, and simulator-build baseline." >&2
+  exit 1
+fi
+
 for workflow_contract in \
   "runs-on: macos-15" \
-  "permissions:" \
-  "contents: read" \
   "workflow_dispatch:" \
   "cancel-in-progress: true" \
   "timeout-minutes: 10" \
@@ -90,6 +214,100 @@ for workflow_contract in \
   fi
 done
 
+workflow_paths=$(find "$ROOT_DIR/.github/workflows" -type f \( -name '*.yml' -o -name '*.yaml' \) -print | LC_ALL=C sort)
+if [ "$workflow_paths" != "$CI_WORKFLOW" ]; then
+  printf '%s\n' "The canonical macOS check workflow must be the only GitHub Actions workflow." >&2
+  exit 1
+fi
+
+if [ "$(grep -Ec '^[[:space:]]*(-[[:space:]]+)?run:' "$CI_WORKFLOW")" -ne 2 ] || \
+  grep -Eq 'continue-on-error:[[:space:]]*true|if:[[:space:]]*false' "$CI_WORKFLOW"; then
+  printf '%s\n' "GitHub Actions must run exactly the portable check and unsigned simulator build without bypasses." >&2
+  exit 1
+fi
+
+if [ "$(grep -Ec '^[[:space:]]+(-[[:space:]]+)?uses: actions/checkout@' "$CI_WORKFLOW")" -ne 1 ]; then
+  printf '%s\n' "GitHub Actions must contain exactly one checkout step." >&2
+  exit 1
+fi
+
+if ! awk '
+  function finish_step() {
+    if (checkout) {
+      checkout_count++
+      if (persist_credentials) {
+        secure_checkout_count++
+      }
+    }
+    checkout = 0
+    with_block = 0
+    persist_credentials = 0
+  }
+
+  /^      - / {
+    finish_step()
+  }
+
+  /^        uses: actions\/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10([[:space:]]+#.*)?$/ {
+    checkout = 1
+  }
+
+  /^      - uses: actions\/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10([[:space:]]+#.*)?$/ {
+    checkout = 1
+  }
+
+  checkout && /^        with:$/ {
+    with_block = 1
+  }
+
+  checkout && with_block && /^          persist-credentials: false$/ {
+    persist_credentials = 1
+  }
+
+  END {
+    finish_step()
+    exit !(checkout_count == 1 && secure_checkout_count == 1)
+  }
+' "$CI_WORKFLOW"; then
+  printf '%s\n' "The pinned checkout step must disable persisted credentials." >&2
+  exit 1
+fi
+
+if ! awk '
+  /^permissions:$/ {
+    permissions_count++
+    in_permissions = 1
+    next
+  }
+
+  in_permissions && /^[^[:space:]]/ {
+    in_permissions = 0
+  }
+
+  in_permissions && /^  contents: read$/ {
+    contents_read++
+    next
+  }
+
+  in_permissions && /^  [[:alnum:]_-]+:/ {
+    unexpected_permission++
+  }
+
+  END {
+    exit !(permissions_count == 1 && contents_read == 1 && unexpected_permission == 0)
+  }
+' "$CI_WORKFLOW" ||
+  grep -Eq '^[[:space:]]*permissions:[[:space:]]*write-all([[:space:]]*(#.*)?)?$' "$CI_WORKFLOW" ||
+  grep -Eq '^[[:space:]]+[[:alnum:]_-]+:[[:space:]]*write([[:space:]]*(#.*)?)?$' "$CI_WORKFLOW"; then
+  printf '%s\n' "GitHub Actions must grant only top-level read access to repository contents." >&2
+  exit 1
+fi
+
+if ! grep -Fq "does not persist checkout credentials" "$README"; then
+  printf '%s\n' "README must document the credential-free checkout boundary." >&2
+  exit 1
+fi
+
 if ! grep -Fq "Signing certificates" "$ROOT_DIR/SECURITY.md" ||
   ! grep -Fq "archives, and build outputs" "$ROOT_DIR/SECURITY.md" ||
   ! grep -Fq "path extension case-insensitively" "$ROOT_DIR/SECURITY.md" ||
@@ -98,15 +316,38 @@ if ! grep -Fq "Signing certificates" "$ROOT_DIR/SECURITY.md" ||
   exit 1
 fi
 
-if ! grep -Fq "lint: check" "$ROOT_DIR/Makefile" ||
-  ! grep -Fq "test: check" "$ROOT_DIR/Makefile" ||
-  ! grep -Fq "build: check" "$ROOT_DIR/Makefile" ||
+if ! grep -Fq 'override ROOT := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))' "$ROOT_DIR/Makefile" ||
+  ! grep -Fq '"$(ROOT)scripts/check-baseline.sh"' "$ROOT_DIR/Makefile" ||
+  ! grep -Fq '"$(ROOT)scripts/test-twemoji-description.sh"' "$ROOT_DIR/Makefile" ||
+  [ "$(grep -Fc '"$(ROOT)Twemoji.xcodeproj"' "$ROOT_DIR/Makefile")" -ne 2 ] ||
+  grep -Fq '@scripts/check-baseline.sh' "$ROOT_DIR/Makefile" ||
+  grep -Fq -- '-project Twemoji.xcodeproj' "$ROOT_DIR/Makefile" ||
+  ! grep -Fq "SWIFTC ?= swiftc" "$ROOT_DIR/Makefile" ||
+  ! grep -Fq "check: lint test" "$ROOT_DIR/Makefile" ||
+  ! grep -Fq "build: lint" "$ROOT_DIR/Makefile" ||
+  ! grep -Fq 'command -v "$(SWIFTC)"' "$ROOT_DIR/Makefile" ||
+  ! grep -Fq 'swiftc unavailable; skipping Twemoji description Swift tests' "$ROOT_DIR/Makefile" ||
   ! grep -Fq "xcode-build:" "$ROOT_DIR/Makefile" ||
-  ! grep -Fq "Twemoji.xcodeproj -target Twemoji -sdk iphonesimulator" "$ROOT_DIR/Makefile" ||
+  ! grep -Fq '"$(ROOT)Twemoji.xcodeproj" -target Twemoji -sdk iphonesimulator' "$ROOT_DIR/Makefile" ||
   ! grep -Fq "CODE_SIGNING_ALLOWED=NO" "$ROOT_DIR/Makefile" ||
   ! grep -Fq "ONLY_ACTIVE_ARCH=NO" "$ROOT_DIR/Makefile" ||
   ! grep -Fq "DISABLE_MANUAL_TARGET_ORDER_BUILD_WARNING=YES" "$ROOT_DIR/Makefile"; then
   printf '%s\n' "Makefile must expose lint, test, and build aliases for the baseline gate." >&2
+  exit 1
+fi
+
+if ! grep -Fq "status: completed" "$LOCATION_INDEPENDENT_MAKE_PLAN" ||
+  ! grep -Fq "external working directory" "$LOCATION_INDEPENDENT_MAKE_PLAN" ||
+  ! grep -Fq "hostile mutations" "$LOCATION_INDEPENDENT_MAKE_PLAN" ||
+  ! grep -Fq "xcodebuild is not installed" "$LOCATION_INDEPENDENT_MAKE_PLAN"; then
+  printf '%s\n' "Location-independent Make plan must record truthful completed verification." >&2
+  exit 1
+fi
+
+if ! grep -Fq "Makefile location" "$README" ||
+  ! grep -Fq "Makefile location" "$AGENTS" ||
+  ! grep -Fq "Makefile location" "$ROOT_DIR/CHANGES.md"; then
+  printf '%s\n' "Project guidance must document location-independent Make paths." >&2
   exit 1
 fi
 
@@ -152,12 +393,11 @@ if -1 in (add_child, add_subview, did_move) or not (add_child < add_subview < di
     raise SystemExit(1)
 PY
 
-if ! grep -Fq "guard let docsPath = Bundle.main.resourcePath" "$BROWSER_VIEW" ||
-  ! grep -Fq "let fileManager = FileManager.default" "$BROWSER_VIEW" ||
+if ! grep -Fq "guard let resourceURL = Bundle.main.resourceURL" "$BROWSER_VIEW" ||
   ! grep -Fq "stickers.removeAll()" "$BROWSER_VIEW" ||
   ! grep -Fq "defer {" "$BROWSER_VIEW" ||
   ! grep -Fq "stickerBrowserView.reloadData()" "$BROWSER_VIEW" ||
-  ! grep -Fq ".sorted()" "$BROWSER_VIEW" ||
+  ! grep -Fq "StickerResourcePolicy.discoverStickerURLs(in: resourceURL)" "$BROWSER_VIEW" ||
   grep -Fq "resourcePath!" "$BROWSER_VIEW" ||
   grep -Fq 'localizedDescription: "asset"' "$BROWSER_VIEW"; then
   printf '%s\n' "Sticker loading must avoid force unwraps, clear previous data, reload the browser, sort resources, and use per-asset descriptions." >&2
@@ -169,22 +409,188 @@ if grep -Fq "browserViewController.stickerBrowserView.reloadData()" "$MESSAGES_V
   exit 1
 fi
 
-if ! grep -Fq "(file as NSString).deletingPathExtension" "$BROWSER_VIEW" ||
-  grep -Fq 'replacingOccurrences(of: ".png", with: "")' "$BROWSER_VIEW"; then
+for resource_policy_contract in \
+  "static let maximumStickerCount = 1024" \
+  "static let maximumStickerFileSize = 500 * 1024" \
+  ".isRegularFileKey" \
+  ".fileSizeKey" \
+  "options: [.skipsHiddenFiles]" \
+  "url.deletingLastPathComponent().standardizedFileURL == standardizedResourceURL" \
+  "values.isRegularFile == true" \
+  "fileSize > 0 && fileSize <= maximumStickerFileSize" \
+  '.sorted { $0.lastPathComponent < $1.lastPathComponent }' \
+  ".prefix(maximumStickerCount)"; do
+  if ! grep -Fq "$resource_policy_contract" "$RESOURCE_POLICY_SOURCE"; then
+    printf '%s\n' "Sticker resource policy is missing: $resource_policy_contract" >&2
+    exit 1
+  fi
+done
+
+if ! grep -Fq "(file as NSString).deletingPathExtension" "$DESCRIPTION_SOURCE" ||
+  grep -Fq 'replacingOccurrences(of: ".png", with: "")' "$DESCRIPTION_SOURCE"; then
   printf '%s\n' "Sticker loading must derive asset names by stripping only the path extension." >&2
   exit 1
 fi
 
-if ! grep -Fq "private func isPNGResource" "$BROWSER_VIEW" ||
-  ! grep -Fq 'pathExtension.lowercased() == "png"' "$BROWSER_VIEW" ||
-  grep -Fq 'file.hasSuffix(".png")' "$BROWSER_VIEW"; then
+for description_contract in \
+  "static func localizedDescription(for file: String) -> String" \
+  'assetName.split(separator: "-", omittingEmptySubsequences: false)' \
+  'UInt32(String(component), radix: 16)' \
+  "UnicodeScalar(value)" \
+  "description.unicodeScalars.append(scalar)" \
+  "return assetName"; do
+  if ! grep -Fq "$description_contract" "$DESCRIPTION_SOURCE"; then
+    printf '%s\n' "Sticker Unicode description contract is missing: $description_contract" >&2
+    exit 1
+  fi
+done
+
+if ! grep -Fq "let stickerDescription = TwemojiDescription.localizedDescription(for: stickerURL.lastPathComponent)" "$BROWSER_VIEW" ||
+  ! grep -Fq "localizedDescription: stickerDescription" "$BROWSER_VIEW" ||
+  grep -Fq "private func localizedDescription" "$BROWSER_VIEW" ||
+  grep -Eq '^import (UIKit|Messages)$' "$DESCRIPTION_SOURCE"; then
+  printf '%s\n' "Sticker descriptions must use the framework-independent decoder from the Messages controller." >&2
+  exit 1
+fi
+
+for test_contract in \
+  'assertDescription("\u{1F600}", file: "1f600.png", caseName: "single scalar")' \
+  'assertDescription("\u{1F1FA}\u{1F1F8}", file: "1f1fa-1f1f8.png", caseName: "multi scalar")' \
+  'assertDescription("\u{1F600}", file: "1f600.PNG", caseName: "uppercase extension")' \
+  'assertDescription("\u{1F600}", file: "1f600", caseName: "missing extension")' \
+  'assertDescription("not-hex", file: "not-hex.png", caseName: "invalid hexadecimal")' \
+  'assertDescription("1f600-", file: "1f600-.png", caseName: "empty component")' \
+  'assertDescription("d800", file: "d800.png", caseName: "surrogate scalar")' \
+  'assertDescription("1f600.preview", file: "1f600.preview.png", caseName: "multi-dot fallback")' \
+  'assertDescription("000a", file: "000a.png", caseName: "control scalar fallback")' \
+  'caseName: "bounded regular PNG discovery"' \
+  'caseName: "deterministic accessible description order"' \
+  'caseName: "sticker count bound"'; do
+  if ! grep -Fq "$test_contract" "$DESCRIPTION_TEST"; then
+    printf '%s\n' "Twemoji description executable test case is missing: $test_contract" >&2
+    exit 1
+  fi
+done
+
+if [ ! -x "$DESCRIPTION_RUNNER" ] ||
+  ! grep -Fq 'BUILD_DIR=$(mktemp -d' "$DESCRIPTION_RUNNER" ||
+  ! grep -Fq 'trap cleanup 0' "$DESCRIPTION_RUNNER" ||
+  ! grep -Fq "trap 'exit 129' 1" "$DESCRIPTION_RUNNER" ||
+  ! grep -Fq "trap 'exit 130' 2" "$DESCRIPTION_RUNNER" ||
+  ! grep -Fq "trap 'exit 143' 15" "$DESCRIPTION_RUNNER" ||
+  ! grep -Fq 'MessagesExtension/TwemojiDescription.swift' "$DESCRIPTION_RUNNER" ||
+  ! grep -Fq 'MessagesExtension/StickerResourcePolicy.swift' "$DESCRIPTION_RUNNER" ||
+  ! grep -Fq 'Tests/TwemojiDescriptionTests/main.swift' "$DESCRIPTION_RUNNER" ||
+  ! grep -Fq '"$BUILD_DIR/twemoji-description-tests"' "$DESCRIPTION_RUNNER"; then
+  printf '%s\n' "Twemoji description test runner must compile production code and clean temporary output on every exit path." >&2
+  exit 1
+fi
+
+if ! sh -n "$DESCRIPTION_RUNNER"; then
+  printf '%s\n' "Twemoji description test runner must remain valid POSIX shell." >&2
+  exit 1
+fi
+
+python3 - "$ROOT_DIR/MessagesExtension" <<'PY'
+import pathlib
+import sys
+
+root = pathlib.Path(sys.argv[1])
+pngs = sorted(root.glob("*.png"))
+if len(pngs) != 834:
+    raise SystemExit(f"Expected 834 bundled sticker PNGs, found {len(pngs)}")
+
+for path in pngs:
+    components = path.stem.split("-")
+    if not components or any(not component for component in components):
+        raise SystemExit(f"Sticker stem has an empty Unicode component: {path.name}")
+    for component in components:
+        try:
+            value = int(component, 16)
+        except ValueError as exc:
+            raise SystemExit(f"Sticker stem is not hexadecimal: {path.name}") from exc
+        if value > 0x10FFFF or 0xD800 <= value <= 0xDFFF:
+            raise SystemExit(f"Sticker stem is not a Unicode scalar sequence: {path.name}")
+PY
+
+if ! grep -Fq "status: completed" "$ACCESSIBLE_DESCRIPTION_PLAN" ||
+  ! grep -Fq "All 834 PNG stems decoded" "$ACCESSIBLE_DESCRIPTION_PLAN" ||
+  ! grep -Fq "raw asset stem failed" "$ACCESSIBLE_DESCRIPTION_PLAN" ||
+  ! grep -Fq "filename fallback failed" "$ACCESSIBLE_DESCRIPTION_PLAN" ||
+  ! grep -Fq "hosted macOS build" "$ACCESSIBLE_DESCRIPTION_PLAN"; then
+  printf '%s\n' "Accessible sticker description plan must record completed local verification." >&2
+  exit 1
+fi
+
+for document in "$README" "$ROOT_DIR/SECURITY.md" "$VISION" "$ROOT_DIR/CHANGES.md"; do
+  if ! grep -Fq "accessibility" "$document"; then
+    printf '%s\n' "$document must document Unicode sticker accessibility descriptions." >&2
+    exit 1
+  fi
+done
+
+python3 - "$README" <<'PY'
+from pathlib import Path
+import sys
+
+readme = Path(sys.argv[1]).read_text(encoding="utf-8")
+heading = "### Manual Messages Verification"
+try:
+    section = readme.split(heading, 1)[1].split("\n## ", 1)[0]
+except IndexError:
+    raise SystemExit("README must contain one Manual Messages Verification section.")
+
+contracts = (
+    "make check",
+    "make xcode-build",
+    "Xcode 16.4",
+    "run the `MessagesExtension` scheme",
+    "app drawer",
+    "Messages input field",
+    "Messages send control",
+    "conversation transcript",
+    "drag it onto an",
+    "single-scalar sticker",
+    "multi-scalar",
+    "raw hexadecimal asset stem",
+    "a sticker was missing",
+    "unexpected permission/network behavior",
+    "manual verification complete unless",
+)
+for contract in contracts:
+    if contract not in section:
+        raise SystemExit(f"Manual Messages verification contract is missing: {contract}")
+PY
+
+if ! grep -Fq "static and unsigned-build success" "$ROOT_DIR/CHANGES.md" ||
+  ! grep -Fq "Manual Messages verification is documented separately" "$VISION" ||
+  ! grep -Fq "do not prove Messages-host interaction" "$AGENTS" ||
+  ! grep -Fq "Static checks and an unsigned simulator build do not prove" "$ROOT_DIR/SECURITY.md"; then
+  printf '%s\n' "Project guidance must separate build evidence from Messages-host verification." >&2
+  exit 1
+fi
+
+if grep -Fq "Add manual verification notes for selecting and sending an emoji" "$VISION"; then
+  printf '%s\n' "VISION must move completed manual sticker guidance out of next priorities." >&2
+  exit 1
+fi
+
+if ! grep -Fq "status: completed" "$MANUAL_VERIFICATION_PLAN" ||
+  ! grep -Fq "hostile mutations were rejected" "$MANUAL_VERIFICATION_PLAN" ||
+  ! grep -Fq "not performed locally" "$MANUAL_VERIFICATION_PLAN" ||
+  ! grep -Fq "hosted macOS build" "$MANUAL_VERIFICATION_PLAN"; then
+  printf '%s\n' "Manual sticker verification plan must record truthful completed evidence." >&2
+  exit 1
+fi
+
+if ! grep -Fq 'url.pathExtension.lowercased() == "png"' "$RESOURCE_POLICY_SOURCE" ||
+  grep -Fq 'hasSuffix(".png")' "$RESOURCE_POLICY_SOURCE"; then
   printf '%s\n' "Sticker loading must filter PNG resources by case-insensitive path extension." >&2
   exit 1
 fi
 
-if ! grep -Fq "createSticker(file: file, resourcePath: docsPath)" "$BROWSER_VIEW" ||
-  ! grep -Fq "func createSticker(file: String, resourcePath: String)" "$BROWSER_VIEW" ||
-  ! grep -Fq "appendingPathComponent(file)" "$BROWSER_VIEW" ||
+if ! grep -Fq "for stickerURL in try StickerResourcePolicy.discoverStickerURLs(in: resourceURL)" "$BROWSER_VIEW" ||
+  ! grep -Fq "func createSticker(at stickerURL: URL)" "$BROWSER_VIEW" ||
   grep -Fq 'pathForResource(asset, ofType: "png")' "$BROWSER_VIEW"; then
   printf '%s\n' "Sticker creation must use exact discovered PNG file paths instead of reconstructing resource lookups." >&2
   exit 1
@@ -198,7 +604,7 @@ source = Path(sys.argv[1]).read_text(encoding="utf-8")
 clear = source.find("stickers.removeAll()")
 defer = source.find("defer {")
 reload = source.find("stickerBrowserView.reloadData()")
-guard = source.find("guard let docsPath = Bundle.main.resourcePath")
+guard = source.find("guard let resourceURL = Bundle.main.resourceURL")
 if -1 in (clear, defer, reload, guard) or not (clear < defer < reload < guard):
     print("Sticker loading must clear stale stickers and schedule reload before resource resolution.", file=sys.stderr)
     raise SystemExit(1)
@@ -209,7 +615,11 @@ if [ "$(grep -Fc "SWIFT_VERSION = 5.0;" "$PROJECT")" -ne 4 ] ||
   [ "$(grep -Fc "IPHONEOS_DEPLOYMENT_TARGET = 12.0;" "$PROJECT")" -ne 2 ] ||
   grep -Fq "IPHONEOS_DEPLOYMENT_TARGET = 10.0;" "$PROJECT" ||
   ! grep -Fq "MessagesViewController.swift in Sources" "$PROJECT" ||
-  ! grep -Fq "TwemojiBrowserViewController.swift in Sources" "$PROJECT"; then
+  ! grep -Fq "TwemojiBrowserViewController.swift in Sources" "$PROJECT" ||
+  [ "$(grep -Fc "TwemojiDescription.swift in Sources" "$PROJECT")" -ne 2 ] ||
+  [ "$(grep -Fc "TwemojiDescription.swift */ =" "$PROJECT")" -ne 1 ] ||
+  [ "$(grep -Fc "StickerResourcePolicy.swift in Sources" "$PROJECT")" -ne 2 ] ||
+  [ "$(grep -Fc "StickerResourcePolicy.swift */ =" "$PROJECT")" -ne 1 ]; then
   printf '%s\n' "Xcode project must preserve the Swift 5 / iOS 12 extension baseline." >&2
   exit 1
 fi
@@ -446,6 +856,31 @@ if ! grep -Fq "Status: Completed" "$SWIFT5_PLAN" ||
   printf '%s\n' "Swift 5 build plan must remain completed with hosted Xcode verification recorded." >&2
   exit 1
 fi
+
+for description_plan_contract in \
+  "status: completed" \
+  "make check" \
+  "external working directory" \
+  "hostile mutations" \
+  "swiftc is unavailable" \
+  "hosted macOS" \
+  "c85e2bd8b18a961ef0aba84680c288bc8fc05ecd" \
+  'push run `27641789655`' \
+  'pull-request run `27641796128`' \
+  'Twemoji description Swift tests passed.' \
+  'BUILD SUCCEEDED'; do
+  if ! grep -Fq "$description_plan_contract" "$DESCRIPTION_TEST_PLAN"; then
+    printf '%s\n' "Twemoji description Swift-test plan must retain evidence: $description_plan_contract" >&2
+    exit 1
+  fi
+done
+
+for document in "$README" "$AGENTS" "$ROOT_DIR/SECURITY.md" "$VISION" "$ROOT_DIR/CHANGES.md"; do
+  if ! grep -Fq "Twemoji description behavior" "$document"; then
+    printf '%s\n' "$document must document executable Twemoji description behavior verification." >&2
+    exit 1
+  fi
+done
 
 for png_integrity_contract in \
   "zlib.crc32" \

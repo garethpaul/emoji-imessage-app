@@ -1,5 +1,41 @@
 # Changes
 
+## 2026-06-19
+
+- Hardened runtime sticker discovery to accept only direct regular non-symlink
+  PNG files, reject empty or oversized entries, and cap deterministic loading.
+- Extended executable Swift coverage through the real resource policy and
+  accessibility-description code paths.
+
+## 2026-06-16
+
+- Extracted Twemoji description behavior into framework-independent Swift and
+  added executable valid-decoding and invalid-input fallback cases to
+  `make check`.
+
+## 2026-06-15
+
+- Bundled Twemoji graphics are attributed in THIRD_PARTY_NOTICES.md under CC BY 4.0.
+- Added a static 834-PNG inventory and attribution-retention boundary for future
+  asset refreshes.
+
+## 2026-06-14
+
+- Made the portable checker and Xcode project targets resolve paths from the
+  Makefile location so they work from external working directories.
+
+## 2026-06-13
+
+- Removed the Messages extension storyboard's template label and constraints so
+  the programmatic sticker browser is the sole content surface.
+- Added a version-recorded manual Messages checklist for sticker selection,
+  preview, send, transcript, VoiceOver, privacy, logging, and failure evidence.
+- Distinguished static and unsigned-build success from completed Messages-host
+  interaction.
+- Decode bundled Twemoji filename scalars into Unicode sticker accessibility
+  descriptions instead of exposing hexadecimal asset identifiers.
+- Validate all 834 asset stems and preserve a fail-closed filename fallback.
+
 ## 2026-06-12
 
 - Migrated the project compiler setting and extension source from Swift 3-era
@@ -15,8 +51,9 @@
   boundary, type, CRC, dimension, image-data, and terminal-marker validation.
 - Added a mutation-tested plan and documentation for sticker resource
   integrity failures that would otherwise be skipped at runtime.
-- Added a pinned, read-only `macos-15` GitHub Actions workflow that runs the
-  maintenance baseline and hosted Xcode project parse.
+- Added a pinned, read-only `macos-15` GitHub Actions workflow that does not
+  persist checkout credentials and runs the maintenance baseline and hosted
+  Xcode project parse.
 - Added cancellation and a ten-minute timeout, then made the workflow and CI
   plan part of the checked source contract.
 

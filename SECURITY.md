@@ -31,6 +31,9 @@ Helpful reports include:
 
 ## Mobile Privacy Notes
 
+Bundled Twemoji graphics are attributed in THIRD_PARTY_NOTICES.md under CC BY 4.0.
+Asset updates must retain the notice and record their exact upstream revision.
+
 If this project requests device permissions such as location, camera, microphone, contacts, Bluetooth, health data, or local storage access, reports should describe the permission involved and whether sensitive data can be accessed, persisted, or transmitted unexpectedly. Please avoid testing against real third-party user data or accounts you do not control.
 
 Sticker asset names should be derived from bundled PNG path extensions rather
@@ -48,6 +51,10 @@ data, archives, and build outputs should remain untracked.
 Sticker loading should not use debug logging that exposes bundle paths, asset
 names, or local errors from the Messages extension.
 
+Sticker discovery accepts only direct regular non-symlink PNG resources,
+rejects empty or larger-than-500-KiB files, and caps deterministic loading at
+1,024 entries before `MSSticker` validates image contents.
+
 Sticker loading reloads the sticker browser after every load attempt so failed
 resource lookups clear stale visible sticker data.
 
@@ -58,6 +65,19 @@ unsigned iPhone Simulator build of the Swift 5 host app and extension.
 Every bundled sticker must remain a structurally complete PNG with valid chunk
 boundaries and CRCs, an initial `IHDR`, image data, positive dimensions, and a
 terminal `IEND` without trailing bytes.
+
+Sticker accessibility labels decode only validated hexadecimal Unicode scalar
+stems and fall back to the extensionless asset name on future invalid input.
+Portable Twemoji description behavior tests execute both valid decoding and
+fail-closed fallback cases without loading UIKit, Messages, or sticker assets.
+The extension storyboard contains no template label behind the programmatic
+sticker browser and exposes no stale placeholder content to accessibility APIs.
+Manual Messages verification should confirm that VoiceOver announces both a
+single-scalar and multi-scalar sticker without exposing raw hexadecimal asset
+stems. Also confirm that opening, previewing, and sending a sticker causes no
+unexpected permission prompt, network activity, or private path/error logging.
+Static checks and an unsigned simulator build do not prove this runtime privacy
+boundary; record the exact Xcode and iOS runtime used for the manual check.
 
 ## Dependency and Supply Chain Security
 

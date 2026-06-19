@@ -20,6 +20,7 @@ trap 'exit 143' 15
 
 "$SWIFTC" \
   "$ROOT_DIR/MessagesExtension/TwemojiDescription.swift" \
+  "$ROOT_DIR/MessagesExtension/StickerResourcePolicy.swift" \
   "$ROOT_DIR/Tests/TwemojiDescriptionTests/main.swift" \
   -o "$BUILD_DIR/twemoji-description-tests"
 "$BUILD_DIR/twemoji-description-tests"

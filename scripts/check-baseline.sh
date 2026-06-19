@@ -9,6 +9,7 @@ PROJECT="$ROOT_DIR/Twemoji.xcodeproj/project.pbxproj"
 MESSAGES_VIEW="$ROOT_DIR/MessagesExtension/MessagesViewController.swift"
 BROWSER_VIEW="$ROOT_DIR/MessagesExtension/TwemojiBrowserViewController.swift"
 DESCRIPTION_SOURCE="$ROOT_DIR/MessagesExtension/TwemojiDescription.swift"
+RESOURCE_POLICY_SOURCE="$ROOT_DIR/MessagesExtension/StickerResourcePolicy.swift"
 DESCRIPTION_TEST="$ROOT_DIR/Tests/TwemojiDescriptionTests/main.swift"
 DESCRIPTION_RUNNER="$ROOT_DIR/scripts/test-twemoji-description.sh"
 STORYBOARD="$ROOT_DIR/MessagesExtension/Base.lproj/MainInterface.storyboard"
@@ -59,6 +60,7 @@ for path in \
   "MessagesExtension/MessagesViewController.swift" \
   "MessagesExtension/TwemojiBrowserViewController.swift" \
   "MessagesExtension/TwemojiDescription.swift" \
+  "MessagesExtension/StickerResourcePolicy.swift" \
   "Tests/TwemojiDescriptionTests/main.swift" \
   "scripts/test-twemoji-description.sh" \
   "docs/plans/2026-06-09-emoji-imessage-privacy-source-guard.md" \
@@ -88,6 +90,20 @@ if [ "$png_count" -ne 834 ]; then
   printf '%s\n' "Bundled Twemoji inventory changed from 834 PNGs; document the source revision and update attribution evidence." >&2
   exit 1
 fi
+
+python3 - "$ROOT_DIR/MessagesExtension" <<'PY'
+import stat
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1])
+for path in root.iterdir():
+    if path.suffix.lower() != ".png":
+        continue
+    mode = path.lstat().st_mode
+    if path.is_symlink() or not stat.S_ISREG(mode):
+        raise SystemExit(f"Sticker source must be a regular non-symlink file: {path.name}")
+PY
 
 for attribution_contract in \
   "The 834 PNG sticker graphics" \
@@ -377,12 +393,11 @@ if -1 in (add_child, add_subview, did_move) or not (add_child < add_subview < di
     raise SystemExit(1)
 PY
 
-if ! grep -Fq "guard let docsPath = Bundle.main.resourcePath" "$BROWSER_VIEW" ||
-  ! grep -Fq "let fileManager = FileManager.default" "$BROWSER_VIEW" ||
+if ! grep -Fq "guard let resourceURL = Bundle.main.resourceURL" "$BROWSER_VIEW" ||
   ! grep -Fq "stickers.removeAll()" "$BROWSER_VIEW" ||
   ! grep -Fq "defer {" "$BROWSER_VIEW" ||
   ! grep -Fq "stickerBrowserView.reloadData()" "$BROWSER_VIEW" ||
-  ! grep -Fq ".sorted()" "$BROWSER_VIEW" ||
+  ! grep -Fq "StickerResourcePolicy.discoverStickerURLs(in: resourceURL)" "$BROWSER_VIEW" ||
   grep -Fq "resourcePath!" "$BROWSER_VIEW" ||
   grep -Fq 'localizedDescription: "asset"' "$BROWSER_VIEW"; then
   printf '%s\n' "Sticker loading must avoid force unwraps, clear previous data, reload the browser, sort resources, and use per-asset descriptions." >&2
@@ -393,6 +408,23 @@ if grep -Fq "browserViewController.stickerBrowserView.reloadData()" "$MESSAGES_V
   printf '%s\n' "MessagesViewController must let loadStickers own sticker browser reloads." >&2
   exit 1
 fi
+
+for resource_policy_contract in \
+  "static let maximumStickerCount = 1024" \
+  "static let maximumStickerFileSize = 500 * 1024" \
+  ".isRegularFileKey" \
+  ".fileSizeKey" \
+  "options: [.skipsHiddenFiles]" \
+  "url.deletingLastPathComponent().standardizedFileURL == standardizedResourceURL" \
+  "values.isRegularFile == true" \
+  "fileSize > 0 && fileSize <= maximumStickerFileSize" \
+  '.sorted { $0.lastPathComponent < $1.lastPathComponent }' \
+  ".prefix(maximumStickerCount)"; do
+  if ! grep -Fq "$resource_policy_contract" "$RESOURCE_POLICY_SOURCE"; then
+    printf '%s\n' "Sticker resource policy is missing: $resource_policy_contract" >&2
+    exit 1
+  fi
+done
 
 if ! grep -Fq "(file as NSString).deletingPathExtension" "$DESCRIPTION_SOURCE" ||
   grep -Fq 'replacingOccurrences(of: ".png", with: "")' "$DESCRIPTION_SOURCE"; then
@@ -413,7 +445,7 @@ for description_contract in \
   fi
 done
 
-if ! grep -Fq "let stickerDescription = TwemojiDescription.localizedDescription(for: file)" "$BROWSER_VIEW" ||
+if ! grep -Fq "let stickerDescription = TwemojiDescription.localizedDescription(for: stickerURL.lastPathComponent)" "$BROWSER_VIEW" ||
   ! grep -Fq "localizedDescription: stickerDescription" "$BROWSER_VIEW" ||
   grep -Fq "private func localizedDescription" "$BROWSER_VIEW" ||
   grep -Eq '^import (UIKit|Messages)$' "$DESCRIPTION_SOURCE"; then
@@ -429,7 +461,11 @@ for test_contract in \
   'assertDescription("not-hex", file: "not-hex.png", caseName: "invalid hexadecimal")' \
   'assertDescription("1f600-", file: "1f600-.png", caseName: "empty component")' \
   'assertDescription("d800", file: "d800.png", caseName: "surrogate scalar")' \
-  'assertDescription("1f600.preview", file: "1f600.preview.png", caseName: "multi-dot fallback")'; do
+  'assertDescription("1f600.preview", file: "1f600.preview.png", caseName: "multi-dot fallback")' \
+  'assertDescription("000a", file: "000a.png", caseName: "control scalar fallback")' \
+  'caseName: "bounded regular PNG discovery"' \
+  'caseName: "deterministic accessible description order"' \
+  'caseName: "sticker count bound"'; do
   if ! grep -Fq "$test_contract" "$DESCRIPTION_TEST"; then
     printf '%s\n' "Twemoji description executable test case is missing: $test_contract" >&2
     exit 1
@@ -443,6 +479,7 @@ if [ ! -x "$DESCRIPTION_RUNNER" ] ||
   ! grep -Fq "trap 'exit 130' 2" "$DESCRIPTION_RUNNER" ||
   ! grep -Fq "trap 'exit 143' 15" "$DESCRIPTION_RUNNER" ||
   ! grep -Fq 'MessagesExtension/TwemojiDescription.swift' "$DESCRIPTION_RUNNER" ||
+  ! grep -Fq 'MessagesExtension/StickerResourcePolicy.swift' "$DESCRIPTION_RUNNER" ||
   ! grep -Fq 'Tests/TwemojiDescriptionTests/main.swift' "$DESCRIPTION_RUNNER" ||
   ! grep -Fq '"$BUILD_DIR/twemoji-description-tests"' "$DESCRIPTION_RUNNER"; then
   printf '%s\n' "Twemoji description test runner must compile production code and clean temporary output on every exit path." >&2
@@ -546,16 +583,14 @@ if ! grep -Fq "status: completed" "$MANUAL_VERIFICATION_PLAN" ||
   exit 1
 fi
 
-if ! grep -Fq "private func isPNGResource" "$BROWSER_VIEW" ||
-  ! grep -Fq 'pathExtension.lowercased() == "png"' "$BROWSER_VIEW" ||
-  grep -Fq 'file.hasSuffix(".png")' "$BROWSER_VIEW"; then
+if ! grep -Fq 'url.pathExtension.lowercased() == "png"' "$RESOURCE_POLICY_SOURCE" ||
+  grep -Fq 'hasSuffix(".png")' "$RESOURCE_POLICY_SOURCE"; then
   printf '%s\n' "Sticker loading must filter PNG resources by case-insensitive path extension." >&2
   exit 1
 fi
 
-if ! grep -Fq "createSticker(file: file, resourcePath: docsPath)" "$BROWSER_VIEW" ||
-  ! grep -Fq "func createSticker(file: String, resourcePath: String)" "$BROWSER_VIEW" ||
-  ! grep -Fq "appendingPathComponent(file)" "$BROWSER_VIEW" ||
+if ! grep -Fq "for stickerURL in try StickerResourcePolicy.discoverStickerURLs(in: resourceURL)" "$BROWSER_VIEW" ||
+  ! grep -Fq "func createSticker(at stickerURL: URL)" "$BROWSER_VIEW" ||
   grep -Fq 'pathForResource(asset, ofType: "png")' "$BROWSER_VIEW"; then
   printf '%s\n' "Sticker creation must use exact discovered PNG file paths instead of reconstructing resource lookups." >&2
   exit 1
@@ -569,7 +604,7 @@ source = Path(sys.argv[1]).read_text(encoding="utf-8")
 clear = source.find("stickers.removeAll()")
 defer = source.find("defer {")
 reload = source.find("stickerBrowserView.reloadData()")
-guard = source.find("guard let docsPath = Bundle.main.resourcePath")
+guard = source.find("guard let resourceURL = Bundle.main.resourceURL")
 if -1 in (clear, defer, reload, guard) or not (clear < defer < reload < guard):
     print("Sticker loading must clear stale stickers and schedule reload before resource resolution.", file=sys.stderr)
     raise SystemExit(1)
@@ -582,7 +617,9 @@ if [ "$(grep -Fc "SWIFT_VERSION = 5.0;" "$PROJECT")" -ne 4 ] ||
   ! grep -Fq "MessagesViewController.swift in Sources" "$PROJECT" ||
   ! grep -Fq "TwemojiBrowserViewController.swift in Sources" "$PROJECT" ||
   [ "$(grep -Fc "TwemojiDescription.swift in Sources" "$PROJECT")" -ne 2 ] ||
-  [ "$(grep -Fc "TwemojiDescription.swift */ =" "$PROJECT")" -ne 1 ]; then
+  [ "$(grep -Fc "TwemojiDescription.swift */ =" "$PROJECT")" -ne 1 ] ||
+  [ "$(grep -Fc "StickerResourcePolicy.swift in Sources" "$PROJECT")" -ne 2 ] ||
+  [ "$(grep -Fc "StickerResourcePolicy.swift */ =" "$PROJECT")" -ne 1 ]; then
   printf '%s\n' "Xcode project must preserve the Swift 5 / iOS 12 extension baseline." >&2
   exit 1
 fi

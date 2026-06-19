@@ -106,6 +106,10 @@ before `MSSticker` silently skips an asset at runtime.
 Sticker accessibility descriptions decode each hyphen-separated hexadecimal
 asset stem into its Unicode emoji sequence. A future invalid stem falls back to
 the extensionless filename instead of dropping the sticker or crashing.
+Runtime discovery accepts only direct, regular, non-symlink PNG files between
+1 byte and 500 KiB, sorts them by filename, and caps the browser at 1,024
+stickers. Malformed image contents are skipped by `MSSticker` without leaving
+stale browser data visible.
 The extension storyboard contains no template label or placeholder subview;
 the programmatic sticker browser is the sole content surface.
 
@@ -171,6 +175,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   names, or local errors.
 - Keep sticker loading responsible for its own browser reload so failed loads do
   not leave stale stickers visible.
+- Preserve the runtime regular-file, symlink, path-containment, file-size, and
+  sticker-count bounds when changing bundle resource discovery.
 - Keep the bundled sticker corpus structurally valid; the baseline verifies PNG
   chunks and CRCs rather than accepting signature-only files.
 

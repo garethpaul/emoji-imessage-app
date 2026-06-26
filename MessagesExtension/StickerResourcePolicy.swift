@@ -1,5 +1,9 @@
 import Foundation
 
+enum StickerResourcePolicyError: Error {
+    case tooManyStickers
+}
+
 enum StickerResourcePolicy {
     static let maximumStickerCount = 1024
     static let maximumStickerFileSize = 500 * 1024
@@ -19,7 +23,7 @@ enum StickerResourcePolicy {
             options: [.skipsHiddenFiles]
         )
 
-        return try contents
+        let stickerURLs = try contents
             .filter { url in
                 guard url.pathExtension.lowercased() == "png",
                       url.deletingLastPathComponent().standardizedFileURL == standardizedResourceURL else {
@@ -34,7 +38,10 @@ enum StickerResourcePolicy {
                 return fileSize > 0 && fileSize <= maximumStickerFileSize
             }
             .sorted { $0.lastPathComponent < $1.lastPathComponent }
-            .prefix(maximumStickerCount)
-            .map { $0 }
+
+        guard stickerURLs.count <= maximumStickerCount else {
+            throw StickerResourcePolicyError.tooManyStickers
+        }
+        return stickerURLs
     }
 }

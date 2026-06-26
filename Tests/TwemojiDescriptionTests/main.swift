@@ -55,13 +55,28 @@ assertEqual(
     caseName: "deterministic accessible description order"
 )
 
-private let countFixtureURL = fileManager.temporaryDirectory
-    .appendingPathComponent("twemoji-resource-count-\(UUID().uuidString)", isDirectory: true)
-try fileManager.createDirectory(at: countFixtureURL, withIntermediateDirectories: true)
-defer { try? fileManager.removeItem(at: countFixtureURL) }
-for index in 0...StickerResourcePolicy.maximumStickerCount {
-    let url = countFixtureURL.appendingPathComponent(String(format: "%04x.png", index))
-    try Data([0x41]).write(to: url)
+private func makeStickerSet(count: Int) throws -> URL {
+    let directory = fileManager.temporaryDirectory
+        .appendingPathComponent("twemoji-resource-count-\(UUID().uuidString)", isDirectory: true)
+    try fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
+    for index in 0..<count {
+        let url = directory.appendingPathComponent(String(format: "%04x.png", index))
+        try Data([0x41]).write(to: url)
+    }
+    return directory
 }
-let bounded = try StickerResourcePolicy.discoverStickerURLs(in: countFixtureURL, fileManager: fileManager)
-assertEqual(StickerResourcePolicy.maximumStickerCount, bounded.count, caseName: "sticker count bound")
+
+private let exactLimitURL = try makeStickerSet(count: StickerResourcePolicy.maximumStickerCount)
+defer { try? fileManager.removeItem(at: exactLimitURL) }
+let exactLimit = try StickerResourcePolicy.discoverStickerURLs(in: exactLimitURL, fileManager: fileManager)
+assertEqual(StickerResourcePolicy.maximumStickerCount, exactLimit.count, caseName: "exact sticker count limit")
+
+private let oversizedSetURL = try makeStickerSet(count: StickerResourcePolicy.maximumStickerCount + 1)
+defer { try? fileManager.removeItem(at: oversizedSetURL) }
+do {
+    _ = try StickerResourcePolicy.discoverStickerURLs(in: oversizedSetURL, fileManager: fileManager)
+    fatalError("oversized sticker set: expected discovery to fail")
+} catch StickerResourcePolicyError.tooManyStickers {
+} catch {
+    fatalError("oversized sticker set: unexpected error \(error)")
+}

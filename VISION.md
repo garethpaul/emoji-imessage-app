@@ -35,7 +35,7 @@ Current baseline:
   filename and clears stale state before reloading.
 - Sticker discovery filters resources by case-insensitive PNG path extension.
 - Sticker discovery rejects symlinks, non-regular or indirect paths, empty or
-  oversized files, and more than 1,024 candidates.
+  oversized files, and the complete candidate set when it exceeds 1,024.
 - Sticker creation uses exact discovered PNG file paths so resource loading
   stays aligned with discovery.
 - Sticker asset names are derived by stripping only the PNG path extension.

@@ -1,5 +1,44 @@
 # Changes
 
+## 2026-06-26 05:46 - P1 - Reject oversized sticker bundles
+
+### Summary
+Closed a policy mismatch where runtime discovery silently loaded the first
+1,024 stickers even though the maintained vision promised fail-closed rejection
+of larger candidate sets.
+
+### Work completed
+- Added exact-limit and oversized-set executable Swift regressions.
+- Replaced truncation with a dedicated `tooManyStickers` policy error.
+- Aligned README, security, vision, and baseline contracts with complete-set
+  rejection.
+
+### Threads
+- None; the cycle was implemented directly to avoid overlap.
+
+### Files changed
+- `MessagesExtension/StickerResourcePolicy.swift` — rejects more than 1,024 candidates.
+- `Tests/TwemojiDescriptionTests/main.swift` — covers exact and exceeded limits.
+- `scripts/check-baseline.sh` — rejects truncation and requires completed evidence.
+- `README.md`, `SECURITY.md`, `VISION.md` — document fail-closed behavior.
+- `docs/plans/2026-06-26-oversized-sticker-set*.md` — design and implementation record.
+
+### Validation
+- Official Swift 5.10 container — RED reproduced, then focused tests passed.
+- Repository and external-directory `make check` — passed.
+- Two hostile count-policy mutations — rejected.
+- Hosted unsigned Xcode build and CodeQL — pending exact-head PR validation.
+
+### Bugs / findings
+- P1: oversized valid bundles were partially presented, hiding packaging mistakes.
+
+### Blockers
+- Host `swiftc` and `xcodebuild` are unavailable; Swift container coverage
+  passed and the Xcode build remains a hosted merge gate.
+
+### Next action
+- Record an exact upstream Twemoji revision during the next reviewed asset refresh.
+
 ## 2026-06-19
 
 - Hardened runtime sticker discovery to accept only direct regular non-symlink

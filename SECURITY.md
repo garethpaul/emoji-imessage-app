@@ -52,8 +52,9 @@ Sticker loading should not use debug logging that exposes bundle paths, asset
 names, or local errors from the Messages extension.
 
 Sticker discovery accepts only direct regular non-symlink PNG resources,
-rejects empty or larger-than-500-KiB files, and caps deterministic loading at
-1,024 entries before `MSSticker` validates image contents.
+rejects empty or larger-than-500-KiB files, accepts at most 1,024 valid
+candidates, and rejects the complete oversized set before `MSSticker` validates
+image contents rather than silently presenting a partial bundle.
 
 Sticker loading reloads the sticker browser after every load attempt so failed
 resource lookups clear stale visible sticker data.

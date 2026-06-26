@@ -32,6 +32,8 @@ STORYBOARD_PLACEHOLDER_PLAN="$ROOT_DIR/docs/plans/2026-06-13-emoji-storyboard-pl
 LOCATION_INDEPENDENT_MAKE_PLAN="$ROOT_DIR/docs/plans/2026-06-14-emoji-location-independent-make.md"
 TWEMOJI_ATTRIBUTION_PLAN="$ROOT_DIR/docs/plans/2026-06-15-twemoji-graphics-attribution.md"
 DESCRIPTION_TEST_PLAN="$ROOT_DIR/docs/plans/2026-06-16-twemoji-description-swift-test.md"
+OVERSIZED_SET_DESIGN="$ROOT_DIR/docs/plans/2026-06-26-oversized-sticker-set-design.md"
+OVERSIZED_SET_PLAN="$ROOT_DIR/docs/plans/2026-06-26-oversized-sticker-set.md"
 THIRD_PARTY_NOTICES="$ROOT_DIR/THIRD_PARTY_NOTICES.md"
 CI_WORKFLOW="$ROOT_DIR/.github/workflows/check.yml"
 
@@ -80,6 +82,8 @@ for path in \
   "docs/plans/2026-06-14-emoji-location-independent-make.md" \
   "docs/plans/2026-06-15-twemoji-graphics-attribution.md" \
   "docs/plans/2026-06-16-twemoji-description-swift-test.md" \
+  "docs/plans/2026-06-26-oversized-sticker-set-design.md" \
+  "docs/plans/2026-06-26-oversized-sticker-set.md" \
   "docs/plans/2026-06-08-emoji-imessage-sticker-reload.md" \
   "docs/plans/2026-06-08-emoji-imessage-app-maintenance-baseline.md"; do
   require_file "$path"
@@ -419,9 +423,39 @@ for resource_policy_contract in \
   "values.isRegularFile == true" \
   "fileSize > 0 && fileSize <= maximumStickerFileSize" \
   '.sorted { $0.lastPathComponent < $1.lastPathComponent }' \
-  ".prefix(maximumStickerCount)"; do
+  "guard stickerURLs.count <= maximumStickerCount else" \
+  "throw StickerResourcePolicyError.tooManyStickers"; do
   if ! grep -Fq "$resource_policy_contract" "$RESOURCE_POLICY_SOURCE"; then
     printf '%s\n' "Sticker resource policy is missing: $resource_policy_contract" >&2
+    exit 1
+  fi
+done
+
+if grep -Fq ".prefix(maximumStickerCount)" "$RESOURCE_POLICY_SOURCE"; then
+  printf '%s\n' "Sticker discovery must reject oversized sets instead of truncating them." >&2
+  exit 1
+fi
+
+for oversized_test_contract in \
+  "makeStickerSet(count: StickerResourcePolicy.maximumStickerCount)" \
+  "makeStickerSet(count: StickerResourcePolicy.maximumStickerCount + 1)" \
+  "exact sticker count limit" \
+  "catch StickerResourcePolicyError.tooManyStickers" \
+  "oversized sticker set: expected discovery to fail"; do
+  if ! grep -Fq "$oversized_test_contract" "$DESCRIPTION_TEST"; then
+    printf '%s\n' "Oversized sticker-set test is missing: $oversized_test_contract" >&2
+    exit 1
+  fi
+done
+
+for oversized_plan_contract in \
+  "Status: Completed" \
+  "current policy returned a partial 1,024-sticker set" \
+  "Twemoji description Swift tests passed." \
+  "hostile truncation mutations were rejected" \
+  "repository and external-directory make check passed"; do
+  if ! grep -Fq "$oversized_plan_contract" "$OVERSIZED_SET_PLAN"; then
+    printf '%s\n' "Oversized sticker-set plan must record evidence: $oversized_plan_contract" >&2
     exit 1
   fi
 done
@@ -465,7 +499,7 @@ for test_contract in \
   'assertDescription("000a", file: "000a.png", caseName: "control scalar fallback")' \
   'caseName: "bounded regular PNG discovery"' \
   'caseName: "deterministic accessible description order"' \
-  'caseName: "sticker count bound"'; do
+  'caseName: "exact sticker count limit"'; do
   if ! grep -Fq "$test_contract" "$DESCRIPTION_TEST"; then
     printf '%s\n' "Twemoji description executable test case is missing: $test_contract" >&2
     exit 1

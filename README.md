@@ -107,9 +107,10 @@ Sticker accessibility descriptions decode each hyphen-separated hexadecimal
 asset stem into its Unicode emoji sequence. A future invalid stem falls back to
 the extensionless filename instead of dropping the sticker or crashing.
 Runtime discovery accepts only direct, regular, non-symlink PNG files between
-1 byte and 500 KiB, sorts them by filename, and caps the browser at 1,024
-stickers. Malformed image contents are skipped by `MSSticker` without leaving
-stale browser data visible.
+1 byte and 500 KiB and sorts them by filename. Exactly 1,024 stickers remain
+valid, but a bundle with more valid candidates is rejected completely instead
+of presenting a silent partial set. Malformed image contents are skipped by
+`MSSticker` without leaving stale browser data visible.
 The extension storyboard contains no template label or placeholder subview;
 the programmatic sticker browser is the sole content surface.
 

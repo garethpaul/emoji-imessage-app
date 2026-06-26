@@ -27,7 +27,11 @@ of larger candidate sets.
 - Official Swift 5.10 container — RED reproduced, then focused tests passed.
 - Repository and external-directory `make check` — passed.
 - Two hostile count-policy mutations — rejected.
-- Hosted unsigned Xcode build and CodeQL — pending exact-head PR validation.
+- Implementation head `a6fedffc5656fdecfef4a768d67579a070a2f46f` — push and
+  pull-request macOS checks passed executable Swift tests and unsigned builds;
+  Actions and Swift CodeQL passed.
+- Codex review — attempted and skipped after HTTP 401 authentication failure.
+- Final evidence-only head — requires fresh hosted checks before merge.
 
 ### Bugs / findings
 - P1: oversized valid bundles were partially presented, hiding packaging mistakes.

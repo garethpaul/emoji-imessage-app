@@ -75,3 +75,14 @@ Status: Completed
   host compiler skip.
 - Platform boundary: local `xcodebuild` is unavailable, so the exact-head
   hosted macOS unsigned simulator build is the required Apple-platform result.
+- Implementation head `a6fedffc5656fdecfef4a768d67579a070a2f46f`
+  passed push check run `28239004835` / job `83660841030` and pull-request
+  check run `28239006828` / job `83660847888`; both logs contain the baseline
+  success line, `Twemoji description Swift tests passed.`, and
+  `BUILD SUCCEEDED`.
+- CodeQL run `28239005951` passed Actions job `83660847449` and Swift job
+  `83660847433` on the same implementation head.
+- `codex review --base origin/master` was attempted on that head and failed
+  with HTTP 401 authentication; it was skipped under the continuous-loop
+  authentication rule.
+- The final evidence-only head must pass fresh hosted checks before merge.
